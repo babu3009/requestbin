@@ -1,0 +1,16 @@
+# SAP BTP Cloud Foundry ignore file
+*.pyc
+__pycache__/
+.git/
+.gitignore
+.vscode/
+*.log
+.env
+.DS_Store
+Thumbs.db
+test_sap_btp_config.py
+SAP_BTP_DEPLOYMENT.md
+README.md
+.pytest_cache/
+.coverage
+htmlcov/

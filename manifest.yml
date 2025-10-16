@@ -1,0 +1,19 @@
+---
+applications:
+- name: requestbin-app
+  routes:
+    # - route: {appname}-app.${CF_DOMAIN}
+    - route: requestbin-app.cfapps.eu10-004.hana.ondemand.com
+  memory: 512M
+  instances: 1
+  buildpacks:
+    - python_buildpack
+  command: python web.py
+  services:
+    - redis
+  env:
+    REALM: prod
+    FLASK_ENV: production
+    BP_REQUIREMENTS_FILE: requirements.txt
+    BP_PYTHON_VERSION: 3.10.17
+    MAX_REQUESTS: 200
