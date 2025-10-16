@@ -7,7 +7,7 @@ RequestBin gives you a URL that will collect requests made to it and let you ins
 Launch your own RequestBin instance with docker
 
 ```
-docker run -p "8000:8000" kingster/requestbin:latest
+docker run -p "8000:8000" babu3009/requestbin:latest
 ```
 
 The pre-build image is available in the Docker central repository as [kingster/requestbin](https://hub.docker.com/r/kingster/requestbin).  
