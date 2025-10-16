@@ -12,12 +12,51 @@ docker run -p "8000:8000" kingster/requestbin:latest
 
 The pre-build image is available in the Docker central repository as [kingster/requestbin](https://hub.docker.com/r/kingster/requestbin).  
 
+## Deploy to SAP BTP (Business Technology Platform)
+
+This repository is configured for deployment to SAP BTP Cloud Foundry environment with Redis service.
+
+### Prerequisites
+1. CF CLI installed and configured
+2. Access to SAP BTP space
+3. Redis service instance created
+
+### Deployment Steps
+
+1. **Login to SAP BTP:**
+   ```bash
+   cf login -a <api-endpoint> -o <org> -s <space>
+   ```
+
+2. **Create Redis service (if not already created):**
+   ```bash
+   cf create-service redis-enterprise-cloud <plan> redis
+   ```
+
+3. **Deploy the application:**
+   ```bash
+   cf push -f manifest.yml
+   ```
+
+### Configuration Features
+- **Automatic Redis Detection:** Automatically detects and configures Redis service via VCAP_SERVICES
+- **SSL/TLS Support:** Supports encrypted Redis connections required by SAP BTP
+- **Environment Variables:** Configurable request history size and bin TTL
+- **Python Version:** Compatible with SAP BTP Python buildpack
+
+### Environment Variables
+- `MAX_REQUESTS`: Number of requests to keep per bin (default: 200 on SAP BTP)
+- `BIN_TTL`: Bin lifetime in seconds (default: 96 hours)
+- `REALM`: Set to 'prod' for production deployment
+
+For detailed deployment instructions, see [SAP_BTP_DEPLOYMENT.md](SAP_BTP_DEPLOYMENT.md).
+
 ## Run it with persistence
 
 Clone the project from github
 
 ```
-$ git clone https://github.com/kingster/requestbin
+$ git clone https://github.com/babu3009/requestbin.git
 ```
 
 From the project directory, run `docker-compose`:  
@@ -35,7 +74,7 @@ This will run the automated build of the RequestBin image and then pull down the
 Pull the image down from the Docker central repository:  
 
 ```
-$ docker run -d -p "8000:8000" kingster/requestbin:latest
+$ docker run -d -p "8000:8000" babu3009/requestbin:latest
 ```
 
 This will start the container with the requestbin app available externally on port 8000.  To run the image with a Redis back end, you need to startup redis first. Preferably with a mounted volume.
@@ -106,3 +145,4 @@ Contributors
  * Barry Carlyon <barry@barrycarlyon.co.uk>
  * Jeff Lindsay <progrium@gmail.com>
  * Kinshuk Bairagi <hi@kinsh.uk>
+ * SAP BTP Support by babu3009
