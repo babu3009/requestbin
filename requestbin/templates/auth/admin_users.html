@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block title %}User Management - RequestBin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2><i class="icon-shield"></i> User Management</h2>
+    
+    {% if pending_users %}
+    <div class="alert alert-warning">
+        <strong><i class="icon-exclamation-circle"></i> {{ pending_users|length }} user(s) pending approval</strong>
+    </div>
+    
+    <h3><i class="icon-clock"></i> Pending Approvals</h3>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Domain</th>
+                <th>Email Status</th>
+                <th>Registered</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in pending_users %}
+            <tr>
+                <td>{{ user.email }}</td>
+                <td>
+                    <span class="label">{{ user.email.split('@')[1] }}</span>
+                </td>
+                <td>
+                    {% if user.email_verified %}
+                        <span class="label label-success"><i class="icon-check"></i> Verified</span>
+                    {% else %}
+                        <span class="label label-warning"><i class="icon-envelope"></i> Pending Verification</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at|approximate_time }}</td>
+                <td>
+                    {% if user.email_verified %}
+                    <form method="POST" action="{{ url_for('auth.approve_user', email=user.email) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-success btn-small">
+                            <i class="icon-check"></i> Approve
+                        </button>
+                    </form>
+                    {% else %}
+                    <button type="button" class="btn btn-success btn-small" disabled title="User must verify email first">
+                        <i class="icon-check"></i> Approve (Email Not Verified)
+                    </button>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('auth.reject_user', email=user.email) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to reject this user?')">
+                            <i class="icon-times"></i> Reject
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <hr>
+    {% else %}
+    <div class="alert alert-success">
+        <strong><i class="icon-check"></i> No pending approvals</strong>
+    </div>
+    {% endif %}
+    
+    <h3><i class="icon-users"></i> All Users</h3>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Email Status</th>
+                <th>Approval Status</th>
+                <th>Role</th>
+                <th>Registered</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in all_users %}
+            <tr>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.email_verified %}
+                        <span class="label label-success"><i class="icon-check"></i> Verified</span>
+                    {% else %}
+                        <span class="label label-warning"><i class="icon-envelope"></i> Not Verified</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_approved %}
+                        <span class="label label-success"><i class="icon-check"></i> Approved</span>
+                    {% else %}
+                        <span class="label label-warning"><i class="icon-clock"></i> Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_admin %}
+                        <span class="label label-important"><i class="icon-shield"></i> Admin</span>
+                    {% else %}
+                        <span class="label label-info"><i class="icon-user"></i> User</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at|approximate_time }}</td>
+                <td>
+                    {% if not user.is_admin %}
+                    <form method="POST" action="{{ url_for('auth.reject_user', email=user.email) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this user?')">
+                            <i class="icon-trash"></i> Delete
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">Admin user</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

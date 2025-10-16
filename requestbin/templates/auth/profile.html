@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile - RequestBin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="span8 offset2">
+            <h2><i class="icon-user"></i> User Profile</h2>
+            
+            {% if not user.is_approved %}
+            <div class="alert alert-warning">
+                <strong><i class="icon-exclamation-triangle"></i> Account Pending Approval</strong>
+                <p>Your account is awaiting administrator approval. You will be able to create request bins once your account is approved.</p>
+            </div>
+            {% endif %}
+            
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th width="30%">Email</th>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>
+                            {% if user.is_approved %}
+                                <span class="label label-success"><i class="icon-check"></i> Approved</span>
+                            {% else %}
+                                <span class="label label-warning"><i class="icon-clock"></i> Pending Approval</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Role</th>
+                        <td>
+                            {% if user.is_admin %}
+                                <span class="label label-important"><i class="icon-shield"></i> Administrator</span>
+                            {% else %}
+                                <span class="label label-info"><i class="icon-user"></i> User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Account Created</th>
+                        <td>{{ user.created_at|approximate_time }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <hr>
+            
+            <h3>Quick Actions</h3>
+            <p>
+                {% if user.is_approved %}
+                    <a href="/" class="btn btn-primary"><i class="icon-plus"></i> Create New Bin</a>
+                {% endif %}
+                <a href="/logout" class="btn btn-default"><i class="icon-signout"></i> Logout</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends "layout.html" %}
+{% block title %}About - RequestBin{% endblock %}
+{% block head %}
+    <style type="text/css">
+      .about-content { 
+        font-size: 14px; 
+        line-height: 1.6;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .about-content h1 { 
+        font-size: 32px; 
+        margin-bottom: 20px;
+        color: #333;
+      }
+      .about-content h2 { 
+        font-size: 24px; 
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: #444;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 8px;
+      }
+      .about-content h3 { 
+        font-size: 20px; 
+        margin-top: 25px;
+        margin-bottom: 12px;
+        color: #555;
+      }
+      .about-content h4 { 
+        font-size: 18px; 
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: #666;
+      }
+      .about-content ul, .about-content ol {
+        margin-left: 20px;
+        margin-bottom: 15px;
+      }
+      .about-content li {
+        margin-bottom: 8px;
+      }
+      .about-content code {
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+      }
+      .about-content pre {
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        overflow-x: auto;
+        margin: 15px 0;
+      }
+      .about-content pre code {
+        background: none;
+        padding: 0;
+      }
+      .about-content .feature-list {
+        list-style-type: none;
+        padding-left: 0;
+      }
+      .about-content .feature-list li {
+        padding-left: 25px;
+        position: relative;
+      }
+      .about-content .feature-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #5cb85c;
+        font-weight: bold;
+      }
+      .about-content strong {
+        color: #333;
+      }
+      .about-content a {
+        color: #337ab7;
+        text-decoration: none;
+      }
+      .about-content a:hover {
+        text-decoration: underline;
+      }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="about-content">
+      <h1>RequestBin</h1>
+      <p>RequestBin gives you a URL that will collect requests made to it and let you inspect them in a human-friendly way. Use RequestBin to see what your HTTP client is sending or to inspect and debug webhook requests.</p>
+
+      <h2>Features</h2>
+      <ul class="feature-list">
+        <li><strong>Split-Panel Outlook-Style Interface</strong>: Modern UX with tabular request list and detailed view</li>
+        <li><strong>Real-time Request Inspection</strong>: View headers, query parameters, form data, and raw body</li>
+        <li><strong>Multiple Storage Backends</strong>: Memory, Redis, or PostgreSQL</li>
+        <li><strong>Authentication System</strong>: User registration, login, and OTP verification</li>
+        <li><strong>Data Persistence</strong>: Configurable bin TTL (default: 96 hours)</li>
+        <li><strong>RESTful API</strong>: Programmatic bin and request management</li>
+        <li><strong>Docker Support</strong>: Easy deployment with Docker and Docker Compose</li>
+        <li><strong>SAP BTP Ready</strong>: Optimized for SAP Business Technology Platform</li>
+      </ul>
+
+      <h2>Application Details</h2>
+
+      <h3>User Interface Navigation</h3>
+
+      <h4>Home Page (<code>/</code>)</h4>
+      <ul>
+        <li><strong>Create a New Bin</strong>: Click the main button to generate a unique bin URL</li>
+        <li><strong>Recent Bins</strong>: View your recently created bins in the right sidebar</li>
+        <li><strong>Authentication</strong>: Login/Register links in the top navigation</li>
+      </ul>
+
+      <h4>Bin Inspect View (<code>/&lt;bin-name&gt;?inspect</code>)</h4>
+      <ul>
+        <li><strong>Split-Panel Layout</strong>:
+          <ul>
+            <li><strong>Left Panel</strong>: Tabular list of all requests with minimal details
+              <ul>
+                <li>Request number, timestamp (YYYY-MM-DD HH:mm:ss UTC)</li>
+                <li>HTTP method (color-coded badges: GET=green, POST=blue, PUT=orange, etc.)</li>
+                <li>Content-Type classification (json, xml, form-data, text, binary, raw)</li>
+                <li>Request size and source IP address</li>
+              </ul>
+            </li>
+            <li><strong>Right Panel</strong>: Full request details displayed when clicking a row
+              <ul>
+                <li>Complete headers</li>
+                <li>Query parameters</li>
+                <li>Form/POST parameters</li>
+                <li>Raw request body</li>
+                <li>Ready-to-use cURL command with copy-to-clipboard</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><strong>Refresh Button</strong>: Reload the table to see new requests</li>
+        <li><strong>Auto-update</strong>: Requests appear automatically as they arrive</li>
+      </ul>
+
+      <h4>User Profile (<code>/profile</code>)</h4>
+      <ul>
+        <li>View account information</li>
+        <li>Manage your bins</li>
+        <li>See account statistics</li>
+      </ul>
+
+      <h4>Admin Panel (<code>/admin/users</code>) - Admin Only</h4>
+      <ul>
+        <li>User management</li>
+        <li>System statistics</li>
+        <li>Application monitoring</li>
+      </ul>
+
+      <h3>How to Use</h3>
+
+      <p><strong>1. Create a Bin</strong>:</p>
+      <pre><code># Via Web UI: Visit http://localhost:4000 and click "Create a RequestBin"
+# Via API: 
+curl -X POST http://localhost:4000/api/v1/bins</code></pre>
+
+      <p><strong>2. Send Requests to Your Bin</strong>:</p>
+      <pre><code>curl -X POST http://localhost:4000/&lt;your-bin-id&gt; \
+  -H "Content-Type: application/json" \
+  -d '{"test": "data"}'</code></pre>
+
+      <p><strong>3. Inspect Requests</strong>:</p>
+      <ul>
+        <li>Open <code>http://localhost:4000/&lt;your-bin-id&gt;?inspect</code> in your browser</li>
+        <li>Click any request in the left panel to view full details</li>
+        <li>Use the refresh button to update the list</li>
+        <li>Copy cURL commands for replaying requests</li>
+      </ul>
+
+      <p><strong>4. Share Your Bin</strong>:</p>
+      <ul>
+        <li>Share the bin URL with your webhook provider</li>
+        <li>Configure your application to send requests to the bin</li>
+        <li>Debug and test HTTP integrations in real-time</li>
+      </ul>
+
+      <h2>Quick Start</h2>
+      <p>Launch your own RequestBin instance with Docker:</p>
+      <pre><code>docker run -p "8000:8000" babu3009/requestbin:latest</code></pre>
+      <p>The pre-build image is available in the Docker central repository as <a href="https://hub.docker.com/r/babu3009/requestbin" target="_blank">babu3009/requestbin</a>.</p>
+
+      <h2>API Documentation</h2>
+      <p>These are only for programmatic use. For general use, directly use the Web UI.</p>
+
+      <h3>Bin Management</h3>
+      <ul>
+        <li><strong>Create a new bin</strong>: <code>POST /api/v1/bins</code>
+          <ul>
+            <li>Creates a new request bin</li>
+            <li>Optional form data: <code>private</code> (true/on), <code>custom_name</code></li>
+          </ul>
+        </li>
+        <li><strong>Get bin details</strong>: <code>GET /api/v1/bins/&lt;name&gt;</code>
+          <ul>
+            <li>Retrieves metadata/details for a specific bin</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Requests Management</h3>
+      <ul>
+        <li><strong>List all requests for a bin</strong>: <code>GET /api/v1/bins/&lt;bin&gt;/requests</code>
+          <ul>
+            <li>Returns all the requests made to the specified bin</li>
+          </ul>
+        </li>
+        <li><strong>Get a specific request</strong>: <code>GET /api/v1/bins/&lt;bin&gt;/requests/&lt;name&gt;</code>
+          <ul>
+            <li>Retrieves details for a specific request captured by the bin</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Statistics</h3>
+      <ul>
+        <li><strong>Get global statistics</strong>: <code>GET /api/v1/stats</code>
+          <ul>
+            <li><code>bin_count</code>: Total number of bins</li>
+            <li><code>request_count</code>: Total number of requests</li>
+            <li><code>avg_req_size_kb</code>: Average request size (in KB)</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2>Open Source Contributors</h2>
+      <p>This project builds upon the work of many contributors:</p>
+
+      <h3>Core Contributors</h3>
+      <ul>
+        <li><strong>Jeff Lindsay</strong> (<a href="http://progrium.com" target="_blank">@progrium</a>) - Original creator of RequestBin</li>
+        <li><strong>babu3009</strong> - PostgreSQL support, SAP BTP deployment, modern UI enhancements</li>
+        <li><strong>Kinshuk Bairagi</strong> (<a href="https://github.com/kingster" target="_blank">@kingster</a>) - Maintenance and enhancements</li>
+        <li><strong>Barry Carlyon</strong> - Code contributions</li>
+      </ul>
+
+      <h3>Libraries and Technologies Used</h3>
+
+      <h4>Backend</h4>
+      <ul>
+        <li><strong>Flask 3.1.2</strong> - Web framework</li>
+        <li><strong>PostgreSQL</strong> - Persistent storage backend (via psycopg2)</li>
+        <li><strong>Redis</strong> - Alternative storage backend</li>
+        <li><strong>Flask-Login</strong> - User session management</li>
+        <li><strong>Flask-Bcrypt</strong> - Password hashing</li>
+        <li><strong>itsdangerous</strong> - Secure token generation for OTP</li>
+      </ul>
+
+      <h4>Frontend</h4>
+      <ul>
+        <li><strong>Bootstrap 2.x</strong> - UI framework</li>
+        <li><strong>jQuery</strong> - JavaScript library</li>
+        <li><strong>Font Awesome</strong> - Icon library</li>
+        <li><strong>Google Code Prettify</strong> - Syntax highlighting</li>
+      </ul>
+
+      <h4>Deployment</h4>
+      <ul>
+        <li><strong>Docker</strong> - Containerization</li>
+        <li><strong>Gunicorn</strong> - WSGI HTTP server</li>
+        <li><strong>Werkzeug</strong> - WSGI utility library</li>
+      </ul>
+
+      <h4>Development Tools</h4>
+      <ul>
+        <li><strong>python-dotenv</strong> - Environment variable management</li>
+        <li><strong>Jinja2</strong> - Template engine</li>
+      </ul>
+
+      <h3>License</h3>
+      <p>MIT License - See LICENSE file for details</p>
+
+      <h3>Special Thanks</h3>
+      <ul>
+        <li>Original RequestBin project by Jeff Lindsay</li>
+        <li>All contributors who have helped improve this project</li>
+        <li>Open source community for the amazing tools and libraries</li>
+      </ul>
+    </div>
+{% endblock %}

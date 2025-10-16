@@ -16,9 +16,10 @@ from requestbin import config
 class Bin(object):
     max_requests = config.MAX_REQUESTS
 
-    def __init__(self, private=False, custom_name=None):
+    def __init__(self, private=False, custom_name=None, owner_email=None):
         self.created = time.time()
         self.private = private
+        self.owner_email = owner_email
         self.color = random_color()
         if custom_name is None:
             self.name = tinyid(8)
@@ -58,7 +59,7 @@ class Bin(object):
     def add(self, request):
         self.requests.insert(0, Request(request))
         if len(self.requests) > self.max_requests:
-            for _ in xrange(self.max_requests, len(self.requests)):
+            for _ in range(self.max_requests, len(self.requests)):
                 self.requests.pop(self.max_requests)
 
 

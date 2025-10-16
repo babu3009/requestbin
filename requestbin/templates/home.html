@@ -2,6 +2,15 @@
 {% block head %}
     <script type="text/javascript">
       function createBin() {
+        {% if not current_user.is_authenticated %}
+          alert("Please log in to create a request bin");
+          window.location.href = "/login";
+          return;
+        {% elif not current_user.is_approved %}
+          alert("Your account is pending approval. Please wait for an administrator to approve your registration.");
+          return;
+        {% endif %}
+        
         var name = null
         if($('#custom').prop("checked") == true) {
           name = prompt("Enter a name for your bin:");
@@ -19,6 +28,16 @@
           },
           'success': function(data) {
             window.location.href = "/"+data['name']+"?inspect";
+          },
+          'error': function(xhr) {
+            if(xhr.status === 401) {
+              alert("Please log in to create a request bin");
+              window.location.href = "/login";
+            } else if(xhr.status === 403) {
+              alert("Your account is pending approval. Please wait for an administrator to approve your registration.");
+            } else {
+              alert("Error creating bin: " + (xhr.responseJSON?.error || "Unknown error"));
+            }
           }
         });
       }
@@ -31,6 +50,18 @@
             <h3 class="banner-subheader">
               RequestBin gives you a URL that will collect requests made to it and let you inspect them in a human-friendly way.<br>
               Use RequestBin to see what your HTTP client is sending or to inspect and debug webhook requests.</h3>
+
+            {% if not current_user.is_authenticated %}
+            <div class="alert alert-info">
+              <strong><i class="icon-info-circle"></i> Authentication Required:</strong> 
+              Please <a href="/login">log in</a> or <a href="/register">register</a> to create request bins.
+            </div>
+            {% elif not current_user.is_approved %}
+            <div class="alert alert-warning">
+              <strong><i class="icon-clock"></i> Account Pending Approval:</strong> 
+              Your account is awaiting administrator approval. You will be able to create request bins once approved.
+            </div>
+            {% endif %}
 
             <form class="form-inline">
               <p class="banner-button">

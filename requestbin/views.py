@@ -2,11 +2,13 @@ import urllib
 
 from flask import (make_response, redirect, render_template, request, session,
                    url_for)
+from flask_login import current_user
 
 from requestbin import app, db, config
 
 
 def update_recent_bins(name):
+    """Track recently viewed bins in session (for backwards compatibility)"""
     if "recent" not in session:
         session["recent"] = []
     if name in session["recent"]:
@@ -18,15 +20,51 @@ def update_recent_bins(name):
 
 
 def expand_recent_bins():
+    """Get recent bins - user-specific if authenticated, session-based otherwise"""
+    from requestbin import config
+    recent = []
+    
+    # Check if storage backend has changed - if so, clear session bins
+    current_backend = config.STORAGE_BACKEND
+    if "backend" not in session or session.get("backend") != current_backend:
+        session["backend"] = current_backend
+        session["recent"] = []
+        session.modified = True
+    
+    # For authenticated users, show their bins from database
+    if current_user.is_authenticated:
+        try:
+            user_bins = db.get_bins_by_owner(current_user.email)
+            # Sort by created time, most recent first
+            user_bins.sort(key=lambda x: x.created, reverse=True)
+            # Limit to 10 most recent
+            recent = user_bins[:10]
+        except Exception as e:
+            print(f"Error fetching user bins: {e}")   
+            # Fallback to session-based recent bins
+            recent = _get_session_recent_bins()
+    else:
+        # For non-authenticated users, use session-based recent bins
+        recent = _get_session_recent_bins()
+    
+    return recent
+
+
+def _get_session_recent_bins():
+    """Get bins from session history (fallback for non-authenticated users)"""
     if "recent" not in session:
         session["recent"] = []
     recent = []
-    for name in session["recent"]:
+    for name in session["recent"][:]:  # Create a copy to safely modify during iteration
         try:
             recent.append(db.lookup_bin(name))
-        except KeyError:
-            session["recent"].remove(name)
-            session.modified = True
+        except (KeyError, Exception) as e:
+            # Remove bins that can't be found or cause errors (e.g., backend switch)
+            try:
+                session["recent"].remove(name)
+                session.modified = True
+            except (ValueError, KeyError):
+                pass
     return recent
 
 
@@ -67,3 +105,8 @@ def docs(name):
         )
     else:
         return "Not found", 404
+
+
+@app.endpoint("views.about")
+def about():
+    return render_template("about.html", recent=expand_recent_bins())

@@ -42,8 +42,8 @@ class RedisStorage():
     def _request_count_key(self):
         return '{}-requests'.format(self.prefix)
 
-    def create_bin(self, private=False, custom_name=None) -> Bin:
-        bin = Bin(private, custom_name)
+    def create_bin(self, private=False, custom_name=None, owner_email=None) -> Bin:
+        bin = Bin(private, custom_name, owner_email)
         key = self._key(bin.name)
         self.redis.set(key, bin.dump())
         self.redis.expireat(key, int(bin.created+self.bin_ttl))
@@ -80,3 +80,31 @@ class RedisStorage():
             raise KeyError("Bin not found")
         except Exception as e:
             traceback.print_exc()
+            raise KeyError("Bin not found")
+
+    def get_bins_by_owner(self, owner_email):
+        """Retrieve all bins owned by a specific user"""
+        bins = []
+        try:
+            # Get all bin keys
+            keys = self.redis.keys("{}_*".format(self.prefix))
+            
+            for key in keys:
+                try:
+                    serialized_bin = self.redis.get(key)
+                    if serialized_bin:
+                        bin = Bin.load(serialized_bin)
+                        # Filter by owner_email
+                        if hasattr(bin, 'owner_email') and bin.owner_email == owner_email:
+                            bins.append(bin)
+                except Exception as e:
+                    # Skip bins that can't be loaded
+                    continue
+            
+            # Sort by created time (most recent first)
+            bins.sort(key=lambda b: b.created, reverse=True)
+            return bins
+        except Exception as e:
+            print(f"Error getting bins by owner: {e}")
+            traceback.print_exc()
+            return []
