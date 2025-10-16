@@ -4,7 +4,7 @@ import time
 import pickle
 import traceback
 import redis
-from regex import B
+import ssl
 
 from requestbin.models import Bin
 
@@ -15,7 +15,26 @@ class RedisStorage():
 
     def __init__(self, bin_ttl):
         self.bin_ttl = bin_ttl
-        self.redis = redis.StrictRedis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB, password=config.REDIS_PASSWORD)
+        
+        # Configure Redis connection with SSL support for SAP BTP
+        redis_kwargs = {
+            'host': config.REDIS_HOST,
+            'port': config.REDIS_PORT,
+            'db': config.REDIS_DB,
+            'password': config.REDIS_PASSWORD,
+            'decode_responses': False,  # Keep binary for pickle compatibility
+            'socket_connect_timeout': 30,
+            'socket_timeout': 30
+        }
+        
+        # Add SSL configuration if enabled
+        if getattr(config, 'REDIS_SSL', False):
+            redis_kwargs['ssl'] = True
+            redis_kwargs['ssl_cert_reqs'] = getattr(config, 'REDIS_SSL_CERT_REQS', ssl.CERT_REQUIRED)
+            redis_kwargs['ssl_check_hostname'] = False  # SAP BTP Redis may not have matching hostname
+        
+        # Initialize Redis client
+        self.redis = redis.StrictRedis(**redis_kwargs)
 
     def _key(self, name):
         return '{}_{}'.format(self.prefix, name)
@@ -50,7 +69,7 @@ class RedisStorage():
         info = self.redis.info()
         return info['used_memory'] / info['db0']['keys'] / 1024
 
-    def lookup_bin(self, name) -> Bin:
+    def lookup_bin(self, name):
         key = self._key(name)
         serialized_bin = self.redis.get(key)
         try:

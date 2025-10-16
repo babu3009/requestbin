@@ -1,1 +1,1 @@
-web: gunicorn -b 127.0.0.1:8000 --worker-class gevent --workers 2 --max-requests 1000 --reload requestbin:app
+web: gunicorn -b 127.0.0.1:${PORT} --worker-class gevent --workers 2 --max-requests 1000 --reload requestbin:app

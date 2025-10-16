@@ -3,7 +3,7 @@ import urllib
 from flask import (make_response, redirect, render_template, request, session,
                    url_for)
 
-from requestbin import app, db
+from requestbin import app, db, config
 
 
 def update_recent_bins(name):
@@ -46,7 +46,8 @@ def bin(name):
             return "Private bin\n", 403
         update_recent_bins(name)
         return render_template(
-            "bin.html", bin=bin, base_url=request.scheme + "://" + request.host
+            "bin.html", bin=bin, base_url=request.scheme + "://" + request.host,
+            max_requests=config.MAX_REQUESTS, bin_ttl_hours=config.BIN_TTL // 3600
         )
     else:
         db.create_request(bin, request)

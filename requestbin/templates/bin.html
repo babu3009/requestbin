@@ -153,7 +153,7 @@ public class RequestBinTutorial {
       <div class="alert-message block-message info">
         <h4>Limits</h4>
         <p>This {% if bin.private %}<strong>private</strong>{% endif %}
-        bin will keep the last 20 requests made to it and remain available for 48 hours after it was created.
+        bin will keep the last {{max_requests}} requests made to it and remain available for {{bin_ttl_hours}} hours after it was created.
         However, data might be cleared at any time, so <strong>treat bins as highly ephemeral</strong>.</p>
       </div>
 {% endblock %}
