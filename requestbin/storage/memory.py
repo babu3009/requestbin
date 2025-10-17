@@ -28,8 +28,8 @@ class MemoryStorage():
             if bin.created < expiry:
                 self.bins.pop(name)
 
-    def create_bin(self, private=False, custom_name=None) -> Bin:
-        bin = Bin(private, custom_name)
+    def create_bin(self, private=False, custom_name=None, owner_email=None) -> Bin:
+        bin = Bin(private, custom_name, owner_email)
         self.bins[bin.name] = bin
         return self.bins[bin.name]
 
@@ -48,3 +48,18 @@ class MemoryStorage():
 
     def lookup_bin(self, name) -> Bin:
         return self.bins[name]
+
+    def get_bins_by_owner(self, owner_email):
+        """Retrieve all bins owned by a specific user"""
+        bins = []
+        try:
+            for bin in self.bins.values():
+                if hasattr(bin, 'owner_email') and bin.owner_email == owner_email:
+                    bins.append(bin)
+            
+            # Sort by created time (most recent first)
+            bins.sort(key=lambda b: b.created, reverse=True)
+            return bins
+        except Exception as e:
+            print(f"Error getting bins by owner: {e}")
+            return []

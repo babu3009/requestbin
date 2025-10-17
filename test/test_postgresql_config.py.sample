@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+"""
+Test script to verify PostgreSQL storage configuration.
+This is a sample file. You can run it to test your local or BTP setup.
+"""
+
+import os
+import json
+import sys
+
+def test_postgresql_local():
+    """Test local PostgreSQL configuration"""
+    print("Testing Local PostgreSQL Configuration...")
+    print("=" * 50)
+    
+    # Set test environment
+    os.environ['REALM'] = 'prod'
+    os.environ['STORAGE_BACKEND'] = 'postgresql'
+    
+    # --- Use default local settings or environment variables ---
+    # For a real test, ensure these environment variables are set correctly.
+    postgres_host = os.environ.get('POSTGRES_HOST', 'localhost')
+    postgres_port = os.environ.get('POSTGRES_PORT', '5432')
+    postgres_db = os.environ.get('POSTGRES_DB', '<your_postgres_db>')
+    postgres_user = os.environ.get('POSTGRES_USER', '<your_postgres_user>')
+    
+    print(f"PostgreSQL Host: {postgres_host}")
+    print(f"PostgreSQL Port: {postgres_port}")
+    print(f"PostgreSQL Database: {postgres_db}")
+    print(f"PostgreSQL User: {postgres_user}")
+    print()
+    
+    try:
+        # Import configuration
+        # This will read from environment variables set above
+        import requestbin.config as config
+        
+        print("✓ Configuration loaded successfully")
+        print(f"✓ Storage Backend: {config.STORAGE_BACKEND}")
+        print(f"✓ PostgreSQL Host: {config.POSTGRES_HOST}")
+        # ... other config values
+        
+        # Test PostgreSQL storage initialization
+        from requestbin.storage.postgresql import PostgreSQLStorage
+        
+        print("Initializing PostgreSQL storage...")
+        storage = PostgreSQLStorage(bin_ttl=3600)
+        print("✓ PostgreSQL storage initialized successfully")
+        print()
+        
+        # Test connection by counting bins
+        try:
+            bin_count = storage.count_bins()
+            print("✓ PostgreSQL connection successful!")
+            print(f"  Current bins: {bin_count}")
+            return True
+        except Exception as e:
+            print(f"✗ PostgreSQL connection failed: {e}")
+            print("  Make sure PostgreSQL is running and credentials are correct.")
+            return False
+            
+    except Exception as e:
+        print(f"✗ Configuration error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def test_sap_btp_config():
+    """Test SAP BTP PostgreSQL service configuration"""
+    print("\nTesting SAP BTP PostgreSQL Configuration...")
+    print("=" * 50)
+    
+    # Simulate SAP BTP VCAP_SERVICES environment
+    vcap_services = {
+        "postgresql-db": [{
+            "credentials": {
+                "hostname": "<your-btp-postgres-host>",
+                "port": 5432,
+                "dbname": "<your-btp-postgres-dbname>",
+                "username": "<your-btp-postgres-user>",
+                "password": "<your-btp-postgres-password>",
+                "sslmode": "require"
+            },
+            "label": "postgresql-db",
+            "name": "my-postgres-instance",
+            "plan": "standard"
+        }]
+    }
+    
+    os.environ['VCAP_SERVICES'] = json.dumps(vcap_services)
+    os.environ['REALM'] = 'prod'
+    os.environ['STORAGE_BACKEND'] = 'postgresql'
+    
+    print("Simulating VCAP_SERVICES environment...")
+    
+    try:
+        # Import configuration
+        import requestbin.config as config
+        
+        print("✓ Configuration loaded successfully")
+        print(f"✓ Storage Backend: {config.STORAGE_BACKEND}")
+        print(f"✓ PostgreSQL Host: {config.POSTGRES_HOST}")
+        print(f"✓ PostgreSQL SSL Mode: {config.POSTGRES_SSLMODE}")
+        
+        # In a real test, you would proceed to test the connection
+        # For this sample, we just verify config parsing
+        if config.POSTGRES_HOST == "<your-btp-postgres-host>":
+            print("✓ Successfully parsed PostgreSQL host from VCAP_SERVICES.")
+            return True
+        else:
+            print("✗ Failed to parse PostgreSQL host from VCAP_SERVICES.")
+            return False
+            
+    except Exception as e:
+        print(f"✗ Configuration error: {e}")
+        return False
+    finally:
+        # Clean up environment variable
+        del os.environ['VCAP_SERVICES']
+
+if __name__ == '__main__':
+    print("Running PostgreSQL Configuration Tests...")
+    
+    local_success = test_postgresql_local()
+    if not local_success:
+        print("\nLocal test failed. Aborting.")
+        sys.exit(1)
+        
+    btp_success = test_sap_btp_config()
+    if not btp_success:
+        print("\nSAP BTP test failed.")
+        sys.exit(1)
+        
+    print("\n✅ All PostgreSQL configuration tests passed!")

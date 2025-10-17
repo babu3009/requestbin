@@ -1,15 +1,80 @@
-version: '3.8' 
-services:                      # add
-    app:
-        build: .
-        environment:
-            REALM: prod
-            REDIS_URL: "//redis:6379"
-            WORKERS: 2
-        links:
-            - redis
-        ports:
-            - "8000:8000"
+version: '3.8'
 
-    redis:
-        image: redis
+services:
+  # RequestBin Application
+  app:
+    build: .
+    environment:
+      REALM: prod
+      # Storage Backend Selection: 
+      # - requestbin.storage.redis.RedisStorage (default)
+      # - requestbin.storage.postgresql.PostgreSQLStorage
+      # - requestbin.storage.memory.MemoryStorage
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-requestbin.storage.redis.RedisStorage}
+      
+      # Redis Configuration (used when STORAGE_BACKEND is redis)
+      REDIS_URL: "//redis:6379"
+      
+      # PostgreSQL Configuration (used when STORAGE_BACKEND is postgresql)
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-requestbin}
+      POSTGRES_USER: ${POSTGRES_USER:-requestbin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-requestbin123}
+      POSTGRES_SCHEMA: ${POSTGRES_SCHEMA:-requestbin_app}
+      
+      # Application Configuration
+      WORKERS: 2
+      MAX_REQUESTS: ${MAX_REQUESTS:-200}
+      BIN_TTL: ${BIN_TTL:-345600}  # 96 hours in seconds
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./schema.sql:/app/schema.sql:ro
+    networks:
+      - requestbin-network
+
+  # Redis Service (for Redis storage backend)
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - requestbin-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Service (for PostgreSQL storage backend)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-requestbin}
+      POSTGRES_USER: ${POSTGRES_USER:-requestbin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-requestbin123}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    networks:
+      - requestbin-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-requestbin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+
+networks:
+  requestbin-network:
+    driver: bridge

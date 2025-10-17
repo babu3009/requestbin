@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+
+{% block title %}Verify Email - RequestBin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 50px;">
+    <div class="row">
+        <div class="span12">
+            <div class="well">
+                <h2>Verify Your Email</h2>
+                <hr>
+                
+                {% if otp_valid %}
+                    <div class="alert alert-info">
+                        <strong>Email:</strong> {{ email }}<br>
+                        <strong>Status:</strong> Pending verification<br>
+                        {% if expiry_hours > 0 %}
+                            <strong>OTP expires in:</strong> {{ expiry_hours }} hours {{ expiry_minutes }} minutes
+                        {% elif expiry_minutes > 0 %}
+                            <strong>OTP expires in:</strong> {{ expiry_minutes }} minutes
+                        {% else %}
+                            <strong>OTP expires in:</strong> Less than 1 minute
+                        {% endif %}
+                    </div>
+                    
+                    <p>
+                        An OTP (One-Time Password) has been sent to your email address. 
+                        Please enter the 6-digit code below to verify your email.
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('auth.verify_email') }}">
+                        <div class="control-group">
+                            <label class="control-label" for="otp">OTP Code</label>
+                            <div class="controls">
+                                <input 
+                                    type="text" 
+                                    id="otp" 
+                                    name="otp" 
+                                    class="input-xlarge" 
+                                    placeholder="Enter 6-digit code"
+                                    maxlength="6"
+                                    pattern="[0-9]{6}"
+                                    required
+                                    autofocus
+                                    style="font-size: 24px; letter-spacing: 5px; text-align: center;"
+                                >
+                                <span class="help-block">Enter the 6-digit code from your email</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="icon-check icon-white"></i> Verify Email
+                            </button>
+                            <a href="{{ url_for('auth.resend_otp') }}" class="btn">
+                                <i class="icon-envelope"></i> Resend OTP
+                            </a>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-error">
+                        <strong><i class="icon-exclamation-sign"></i> OTP Expired</strong><br>
+                        Your OTP code has expired (valid for 24 hours). Please request a new one.
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{ url_for('auth.resend_otp') }}" class="btn btn-primary">
+                            <i class="icon-envelope icon-white"></i> Request New OTP
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn">
+                            <i class="icon-arrow-left"></i> Back to Registration
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="alert alert-info" style="margin-bottom: 0;">
+                    <strong><i class="icon-info-sign"></i> Didn't receive the email?</strong>
+                    <ul style="margin-bottom: 0; margin-top: 10px;">
+                        <li>Check your spam/junk folder</li>
+                        <li>Make sure you entered the correct email address</li>
+                        <li>Click "Resend OTP" to get a new code</li>
+                        <li>The code is valid for 24 hours</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-format OTP input (add spaces every 3 digits for readability)
+document.getElementById('otp').addEventListener('input', function(e) {
+    // Only allow digits
+    this.value = this.value.replace(/[^0-9]/g, '');
+    
+    // Limit to 6 digits
+    if (this.value.length > 6) {
+        this.value = this.value.slice(0, 6);
+    }
+});
+
+// Auto-submit form when 6 digits entered
+document.getElementById('otp').addEventListener('input', function(e) {
+    if (this.value.length === 6) {
+        // Optional: Auto-submit after 500ms delay
+        setTimeout(function() {
+            if (confirm('Submit OTP code?')) {
+                document.querySelector('form').submit();
+            }
+        }, 500);
+    }
+});
+</script>
+{% endblock %}

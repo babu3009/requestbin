@@ -16,8 +16,8 @@ except ImportError as e:
 
 db = klass(bin_ttl)
 
-def create_bin(private=False, custom_name=None) -> Bin:
-    return db.create_bin(private, custom_name)
+def create_bin(private=False, custom_name=None, owner_email=None) -> Bin:
+    return db.create_bin(private, custom_name, owner_email)
 
 def create_request(bin, request):
     return db.create_request(bin, request)
@@ -34,3 +34,7 @@ def count_requests():
 
 def avg_req_size():
     return db.avg_req_size()
+
+def get_bins_by_owner(owner_email):
+    """Get all bins owned by a specific user"""
+    return db.get_bins_by_owner(owner_email)

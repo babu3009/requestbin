@@ -1,63 +1,241 @@
 {% extends "layout.html" %}
-{% block title %}RequestBin - {{bin.name}}{% endblock %}
+{% block title %}RequestBin Enterprise - {{bin.name}}{% endblock %}
 {% block icon %}<link rel="shortcut icon" href="{{bin.favicon_uri}}" />{% endblock %}
 
 {% block sidebar %}{% endblock %}
 
-{% block binurl %}
-  <a href="/{{bin.name}}?inspect"><i class="icon-circle icon-2x" style="color: rgb{{bin.color}}"></i></a>
-  <input type="text" value="{{base_url}}/{{bin.name}}" onclick="this.select()" />
-  {% if bin.private %}<i class="icon-lock"></i>{% endif %}
-{% endblock %}
+{% block binurl %}{% endblock %}
 
 {% block head %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+var socket = null;
+var binName = '{{bin.name}}';
+var hasRequests = {% if bin.requests %}true{% else %}false{% endif %};
+
+// Initialize Socket.IO connection
+function initWebSocket() {
+    socket = io({
+        transports: ['websocket', 'polling']
+    });
+    
+    socket.on('connect', function() {
+        console.log('WebSocket connected');
+        // Join room for this specific bin
+        socket.emit('join', {bin_name: binName});
+    });
+    
+    socket.on('disconnect', function() {
+        console.log('WebSocket disconnected');
+    });
+    
+    socket.on('bin_updated', function(data) {
+        console.log('Bin updated:', data);
+        if (data.bin_name === binName) {
+            // If we had no requests and now we have some, reload the page
+            if (!hasRequests && data.request_count > 0) {
+                window.location.reload();
+            } else if (hasRequests) {
+                // Auto-refresh the table if we already have requests
+                window.location.reload();
+            }
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initWebSocket();
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', function() {
+    if (socket) {
+        socket.disconnect();
+    }
+});
+</script>
 {% endblock %}
 
 {% block content %}
-    {% for request in bin.requests %}
-      <div class="message-wrapper" id="message-wrapper-{{request.id}}">
-        <div class="message-list">
-          <div class="row-fluid">
-            <div class="span4">
-              {{base_url}}<br>
-              <span class="method">{{request.method}}</span> 
-              <span class="absolute-path">{{request.path}}</span><span class="querystring">{{request.query_string|to_qs}}</span>
-            </div>
-            <div class="span5 content">
-              {% if request.content_type %}<i class="icon-code"></i>{% endif %} {{request.content_type}}<br>
-              <i class="icon-cloud-upload"></i> {{request.content_length|friendly_size}}
-            </div>
-            <div class="span2" class="timestamp">
-              <span title="{{request.time|exact_time}}">{{request.time|approximate_time}} ago
-                <a href="#{{request.id}}"><i class="icon-link"></i></a>
-              </span><br>
-              From {{request.remote_addr}}
-            </div>
+    {% if bin.requests %}
+      <!-- Bin URL Bar -->
+      <div class="bin-url-bar">
+        <div class="bin-url-content">
+          <a href="/{{bin.name}}?inspect" class="bin-color-indicator">
+            <i class="icon-circle" style="color: rgb{{bin.color}}; font-size: 20px;"></i>
+          </a>
+          <label style="margin: 0 10px 0 5px; font-weight: bold; color: #555;">Bin URL:</label>
+          <input type="text" id="bin-url-input" class="bin-url-input-field" value="{{base_url}}/{{bin.name}}" onclick="this.select()" readonly />
+          <button class="btn btn-small btn-primary" onclick="copyBinUrl()" title="Copy to clipboard" style="margin-left: 8px;">
+            <i class="icon-copy"></i> Copy
+          </button>
+          {% if bin.private %}
+          <span style="margin-left: 10px; color: #999;">
+            <i class="icon-lock"></i> Private
+          </span>
+          {% endif %}
+        </div>
+      </div>
 
-            <div class="span1" class="timestamp">
-              <a href="#detail-{{request.id}}" class="btn btn-mini btn-info" onclick="toggleHovercard('{{request.id}}')">
-                Copy <i class="icon-code"></i>
-              </a>
-              <div id="hovercard-{{request.id}}" class="hovercard curl-preview">
-                <pre class="code-preview">{{request.to_curl}}</pre>
-                <button class="btn btn-small" onclick="copyToClipboard('{{request.id}}')">
-                Copy to clipboard
-                </button>
-              </div>
+      <div class="split-view-container">
+        <!-- Left Panel: Request List -->
+        <div class="request-list-panel">
+          <div class="request-list-header">
+            <div class="list-header-title">
+              <h4 style="margin: 0; display: inline-block;">Requests</h4>
+              <button class="btn btn-small btn-primary refresh-btn" onclick="refreshRequests()" title="Refresh table">
+                <i class="icon-refresh"></i> Refresh
+              </button>
             </div>
-            
+            <div class="list-header-row">
+              <div class="col-id">#</div>
+              <div class="col-datetime">Date & Time</div>
+              <div class="col-method">Method</div>
+              <div class="col-type">Type</div>
+              <div class="col-size">Size</div>
+              <div class="col-ip">IP</div>
+            </div>
+          </div>
+          <div class="request-list-body">
+            {% for request in bin.requests %}
+              <div class="request-list-item {% if loop.first %}active{% endif %}" 
+                   id="list-item-{{request.id}}" 
+                   onclick="showRequestDetail('{{request.id}}')">
+                <div class="col-id">{{loop.index}}</div>
+                <div class="col-datetime">
+                  <div class="datetime-value">{{request.time|format_datetime}}</div>
+                  <div class="timezone-value">{{request.time|format_timezone}}</div>
+                </div>
+                <div class="col-method">
+                  <span class="method-badge method-{{request.method}}">{{request.method}}</span>
+                </div>
+                <div class="col-type">
+                  {% if request.content_type %}
+                    {% if 'multipart/form-data' in request.content_type %}
+                      <span class="type-badge">form-data</span>
+                    {% elif 'application/x-www-form-urlencoded' in request.content_type %}
+                      <span class="type-badge">form-urlencoded</span>
+                    {% elif 'application/json' in request.content_type %}
+                      <span class="type-badge">json</span>
+                    {% elif 'application/xml' in request.content_type or 'text/xml' in request.content_type %}
+                      <span class="type-badge">xml</span>
+                    {% elif 'text/' in request.content_type %}
+                      <span class="type-badge">text</span>
+                    {% elif 'image/' in request.content_type or 'application/octet-stream' in request.content_type %}
+                      <span class="type-badge">binary</span>
+                    {% else %}
+                      <span class="type-badge">raw</span>
+                    {% endif %}
+                  {% else %}
+                    <span class="type-badge type-empty">-</span>
+                  {% endif %}
+                </div>
+                <div class="col-size">{{request.content_length|friendly_size}}</div>
+                <div class="col-ip">{{request.remote_addr}}</div>
+              </div>
+            {% endfor %}
           </div>
         </div>
 
-        <div id="detail-{{request.id}}" class="message-detail">
-            {{ message_detail(request) }}
+        <!-- Right Panel: Request Details -->
+        <div class="request-detail-panel">
+          {% for request in bin.requests %}
+            <div class="request-detail-content {% if loop.first %}active{% endif %}" id="detail-content-{{request.id}}">
+              <div class="detail-header">
+                <h4>Request #{{loop.index}} Details</h4>
+                <div class="detail-header-info">
+                  <span class="method-badge method-{{request.method}}">{{request.method}}</span>
+                  <span class="detail-path">{{request.path}}{{request.query_string|to_qs}}</span>
+                </div>
+                <div class="detail-meta">
+                  <div class="meta-item">
+                    <i class="icon-time"></i> {{request.time|format_datetime}} {{request.time|format_timezone}}
+                  </div>
+                  <div class="meta-item">
+                    <i class="icon-globe"></i> {{request.remote_addr}}
+                  </div>
+                  <div class="meta-item">
+                    <i class="icon-cloud-upload"></i> {{request.content_length|friendly_size}}
+                  </div>
+                </div>
+              </div>
+
+              <div class="detail-body">
+                <div class="detail-section">
+                  <h5>HEADERS</h5>
+                  <div class="detail-table">
+                    {% if request.headers %}
+                      {% for header in request.headers.items() %}
+                        <div class="detail-row">
+                          <div class="detail-key">{{header.0}}</div>
+                          <div class="detail-value">{{header.1|escape}}</div>
+                        </div>
+                      {% endfor %}
+                    {% else %}
+                      <em>None</em>
+                    {% endif %}
+                  </div>
+                </div>
+
+                {% if request.query_string and not request.query_string is string %}
+                  <div class="detail-section">
+                    <h5>QUERY PARAMETERS</h5>
+                    <div class="detail-table">
+                      {% for k,v in request.query_string|dictsort: %}
+                        <div class="detail-row">
+                          <div class="detail-key">{{k}}</div>
+                          <div class="detail-value">{% if v %}{{v}}{% else %}<em>(no value)</em>{% endif %}</div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+
+                {% if request.form_data %}
+                  <div class="detail-section">
+                    <h5>FORM/POST PARAMETERS</h5>
+                    <div class="detail-table">
+                      {% for k,v in request.form_data %}
+                        <div class="detail-row">
+                          <div class="detail-key">{{k}}</div>
+                          <div class="detail-value">{{v}}</div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+
+                <div class="detail-section">
+                  <h5>RAW BODY</h5>
+                  <div class="detail-raw-body">
+                    <pre class="body prettyprint">{%if request.raw%}{{request.raw}}{%else%}<em>None</em>{%endif%}</pre>
+                  </div>
+                </div>
+
+                <div class="detail-section">
+                  <h5>CURL COMMAND</h5>
+                  <div class="curl-command-box">
+                    <pre class="curl-command">{{request.to_curl}}</pre>
+                    <button class="btn btn-small btn-primary" onclick="copyToClipboard('{{request.id}}')">
+                      <i class="icon-copy"></i> Copy to clipboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         </div>
       </div>
     {% else %}
 
       <h4 class="text-center">Bin URL</h4>
       <h2 class="text-center">
-        <input class="xxlarge input-xxlarge" type="text" value="{{base_url}}/{{bin.name}}" onclick="this.select()" style="border-color: rgb{{bin.color}}; border-width: 3px;" /></h2>
+        <input class="xxlarge input-xxlarge" id="bin-url-input-large" type="text" value="{{base_url}}/{{bin.name}}" onclick="this.select()" style="border-color: rgb{{bin.color}}; border-width: 3px;" readonly />
+        <button class="btn btn-primary" onclick="copyBinUrlLarge()" title="Copy to clipboard" style="margin-left: 10px; vertical-align: middle;">
+          <i class="icon-copy"></i> Copy URL
+        </button>
+      </h2>
       <p class="text-center">{% if bin.private %}This is a private bin. Requests are only viewable from this computer.{% endif %}
 
       <hr>
@@ -146,8 +324,6 @@ public class RequestBinTutorial {
         </div>
       </div>
 
-    {% endfor %}
-
       <hr>
 
       <div class="alert-message block-message info">
@@ -156,6 +332,7 @@ public class RequestBinTutorial {
         bin will keep the last {{max_requests}} requests made to it and remain available for {{bin_ttl_hours}} hours after it was created.
         However, data might be cleared at any time, so <strong>treat bins as highly ephemeral</strong>.</p>
       </div>
+    {% endif %}
 {% endblock %}
 
 

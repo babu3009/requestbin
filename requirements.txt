@@ -1,4 +1,5 @@
 gevent
+gevent-websocket
 greenlet
 proxytypes3
 nose
@@ -8,9 +9,19 @@ Werkzeug
 Flask
 Flask-Cors
 redis
+psycopg2-binary
 msgpack
 python-dateutil
 gunicorn
 bugsnag
 blinker
 regex
+Flask-Login
+Flask-WTF
+WTForms
+email-validator
+werkzeug
+python-dotenv
+flask-socketio
+simple-websocket
+Flask-SocketIO

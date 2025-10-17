@@ -1,0 +1,52 @@
+# PowerShell script to run RequestBin locally with PostgreSQL
+# This is a sample file. Copy to 'run-local-postgres.ps1' and fill in your details.
+
+Write-Host "🚀 Starting RequestBin with PostgreSQL backend..." -ForegroundColor Green
+Write-Host ""
+
+# Storage backend configuration
+$env:STORAGE_BACKEND = "requestbin.storage.postgresql.PostgreSQLStorage"
+$env:POSTGRES_SCHEMA = "requestbin_app"
+
+# --- PostgreSQL connection settings ---
+# Replace with your actual PostgreSQL connection details
+$env:POSTGRES_HOST = "localhost"
+$env:POSTGRES_PORT = "5432"
+$env:POSTGRES_DB = "<your_postgres_db>"
+$env:POSTGRES_USER = "<your_postgres_user>"
+$env:POSTGRES_PASSWORD = "<your_postgres_password>"
+
+# --- Authentication configuration ---
+# Replace with your desired admin credentials
+$env:ADMIN_EMAIL = "admin@example.com"
+$env:ADMIN_PASSWORD = "<your_strong_admin_password>"
+$env:AUTO_APPROVE_DOMAINS = "example.com"
+
+# --- Session configuration ---
+# Generate a new secret key. You can use: python -c 'import secrets; print(secrets.token_hex(32))'
+$env:FLASK_SESSION_SECRET_KEY = "<generate-a-new-secret-key>"
+
+# --- SMTP configuration for OTP (development mode - logs to console) ---
+# To enable email sending, uncomment and fill in your SMTP server details
+# $env:SMTP_HOST = "smtp.example.com"
+# $env:SMTP_PORT = "587"
+# $env:SMTP_USER = "your-email@example.com"
+# $env:SMTP_PASSWORD = "your-smtp-password"
+# $env:SMTP_USE_TLS = "true"
+
+# Application settings
+$env:MAX_REQUESTS = "200"
+$env:REALM = "local"
+
+Write-Host "✅ Environment variables set:" -ForegroundColor Cyan
+Write-Host "   STORAGE_BACKEND: $env:STORAGE_BACKEND"
+Write-Host "   POSTGRES_HOST: $env:POSTGRES_HOST"
+Write-Host ""
+Write-Host "⚠️  Make sure PostgreSQL is running and the schema is initialized!" -ForegroundColor Yellow
+Write-Host "   To initialize schema: psql -h $env:POSTGRES_HOST -p $env:POSTGRES_PORT -U $env:POSTGRES_USER -d $env:POSTGRES_DB -f schema.sql" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "🌐 Starting application on http://localhost:3200" -ForegroundColor Green
+Write-Host ""
+
+# Run the application
+python web.py

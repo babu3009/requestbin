@@ -1,0 +1,551 @@
+{% extends "layout.html" %}
+{% block title %}About - RequestBin Enterprise{% endblock %}
+{% block head %}
+    <style type="text/css">
+      .about-content { 
+        font-size: 14px; 
+        line-height: 1.6;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .about-content h1 { 
+        font-size: 32px; 
+        margin-bottom: 20px;
+        color: #333;
+      }
+      .about-content h2 { 
+        font-size: 24px; 
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: #444;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 8px;
+      }
+      .about-content h3 { 
+        font-size: 20px; 
+        margin-top: 25px;
+        margin-bottom: 12px;
+        color: #555;
+      }
+      .about-content h4 { 
+        font-size: 18px; 
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: #666;
+      }
+      .about-content ul, .about-content ol {
+        margin-left: 20px;
+        margin-bottom: 15px;
+      }
+      .about-content li {
+        margin-bottom: 8px;
+      }
+      .about-content code {
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+      }
+      .about-content pre {
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        overflow-x: auto;
+        margin: 15px 0;
+      }
+      .about-content pre code {
+        background: none;
+        padding: 0;
+      }
+      .about-content .feature-list {
+        list-style-type: none;
+        padding-left: 0;
+      }
+      .about-content .feature-list li {
+        padding-left: 25px;
+        position: relative;
+      }
+      .about-content .feature-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #5cb85c;
+        font-weight: bold;
+      }
+      .about-content strong {
+        color: #333;
+      }
+      .about-content a {
+        color: #337ab7;
+        text-decoration: none;
+      }
+      .about-content a:hover {
+        text-decoration: underline;
+      }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="about-content">
+      <h1>RequestBin Enterprise</h1>
+      <p>RequestBin Enterprise gives you a URL that will collect requests made to it and let you inspect them in a human-friendly way. Use RequestBin Enterprise to see what your HTTP client is sending or to inspect and debug webhook requests.</p>
+
+      <h2>Features</h2>
+      <ul class="feature-list">
+        <li><strong>Split-Panel Outlook-Style Interface</strong>: Modern UX with tabular request list and detailed view</li>
+        <li><strong>Real-time Request Inspection</strong>: View headers, query parameters, form data, and raw body</li>
+        <li><strong>Multiple Storage Backends</strong>: Memory, Redis, or PostgreSQL</li>
+        <li><strong>Authentication System</strong>: User registration, login, and OTP email verification</li>
+        <li><strong>Password Management</strong>: Change password and forgot password with OTP reset</li>
+        <li><strong>User-Specific Bins</strong>: Each user has their own bin history and management</li>
+        <li><strong>Data Persistence</strong>: Configurable bin TTL (default: 96 hours)</li>
+        <li><strong>RESTful API</strong>: Programmatic bin and request management</li>
+        <li><strong>Docker Support</strong>: Easy deployment with Docker and Docker Compose</li>
+        <li><strong>SAP BTP Ready</strong>: Optimized for SAP Business Technology Platform</li>
+        <li><strong>Modular Architecture</strong>: Clean, organized codebase following Python best practices</li>
+        <li><strong>WebSocket Support</strong>: Real-time auto-updates for bin requests via Socket.IO</li>
+        <li><strong>Modern UI/UX</strong>: Copy-to-clipboard functionality, improved navigation, responsive design</li>
+      </ul>
+
+      <h2>Real-Time Features</h2>
+      
+      <h3>WebSocket Integration</h3>
+      <p>RequestBin Enterprise includes WebSocket support for real-time updates:</p>
+      <ul class="feature-list">
+        <li>Automatic Request Updates: New requests appear instantly without page refresh</li>
+        <li>Socket.IO Integration: Robust WebSocket implementation using Flask-SocketIO</li>
+        <li>Room-Based Updates: Each bin has its own channel for targeted notifications</li>
+        <li>Fallback Support: Graceful degradation if WebSocket connection fails</li>
+      </ul>
+
+      <p><strong>How it Works:</strong></p>
+      <ol>
+        <li>When you open a bin's inspect view, a WebSocket connection is established</li>
+        <li>When new requests arrive, the server emits a <code>bin_updated</code> event</li>
+        <li>Your browser automatically refreshes the request list</li>
+        <li>No manual refresh needed - just watch requests stream in real-time</li>
+      </ol>
+
+      <p><strong>Technical Details:</strong></p>
+      <ul>
+        <li>Uses Flask-SocketIO with gevent async mode</li>
+        <li>CORS-enabled for cross-origin support</li>
+        <li>Event-driven architecture with join/leave room management</li>
+        <li>Compatible with all modern browsers</li>
+      </ul>
+
+      <h2>Project Structure</h2>
+      <p>The project follows a modular architecture for better maintainability and scalability:</p>
+      
+      <h3>Directory Organization</h3>
+      <ul>
+        <li><strong>requestbin/</strong> - Core application package
+          <ul>
+            <li><code>views/</code> - View modules (main, auth, api)</li>
+            <li><code>auth/</code> - Authentication system (models, forms, storage, utils)</li>
+            <li><code>database/</code> - Database connection and bin management</li>
+            <li><code>storage/</code> - Storage backends (memory, redis, postgresql)</li>
+            <li><code>static/</code> - CSS, JavaScript, images, fonts</li>
+            <li><code>templates/</code> - HTML templates</li>
+          </ul>
+        </li>
+        <li><strong>scripts/</strong> - Organized utility scripts
+          <ul>
+            <li><code>admin/</code> - User management tools (create admin, change password)</li>
+            <li><code>database/</code> - Database setup and migration scripts</li>
+            <li><code>deployment/</code> - Deployment helpers (run scripts, backend switching)</li>
+            <li><code>debug/</code> - Diagnostic and troubleshooting tools</li>
+          </ul>
+        </li>
+        <li><strong>config/</strong> - Deployment configurations (Cloud Foundry, Heroku)</li>
+        <li><strong>docs/</strong> - Comprehensive documentation (19+ guides)</li>
+        <li><strong>test/</strong> - Test scripts with detailed coverage</li>
+      </ul>
+
+      <h3>Key Benefits</h3>
+      <ul class="feature-list">
+        <li>Clean separation of concerns with modular packages</li>
+        <li>Easy to navigate and maintain codebase</li>
+        <li>Organized utility scripts by function</li>
+        <li>Centralized configuration management</li>
+        <li>Comprehensive documentation structure</li>
+        <li>Follows Python best practices (similar to Django/Flask standards)</li>
+      </ul>
+
+      <h2>Application Details</h2>
+
+      <h3>User Interface Navigation</h3>
+
+      <h4>Home Page (<code>/</code>)</h4>
+      <ul>
+        <li><strong>Create a New Bin</strong>: Click the main button to generate a unique bin URL</li>
+        <li><strong>Recent Bins</strong>: View your recently created bins in the right sidebar</li>
+        <li><strong>Authentication</strong>: Login/Register links in the top navigation</li>
+      </ul>
+
+      <h4>Bin Inspect View (<code>/&lt;bin-name&gt;?inspect</code>)</h4>
+      <ul>
+        <li><strong>Split-Panel Layout</strong>:
+          <ul>
+            <li><strong>Left Panel</strong>: Tabular list of all requests with minimal details
+              <ul>
+                <li>Request number, timestamp (YYYY-MM-DD HH:mm:ss UTC)</li>
+                <li>HTTP method (color-coded badges: GET=green, POST=blue, PUT=orange, etc.)</li>
+                <li>Content-Type classification (json, xml, form-data, text, binary, raw)</li>
+                <li>Request size and source IP address</li>
+              </ul>
+            </li>
+            <li><strong>Right Panel</strong>: Full request details displayed when clicking a row
+              <ul>
+                <li>Complete headers</li>
+                <li>Query parameters</li>
+                <li>Form/POST parameters</li>
+                <li>Raw request body</li>
+                <li>Ready-to-use cURL command with copy-to-clipboard</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><strong>Refresh Button</strong>: Reload the table to see new requests</li>
+        <li><strong>Auto-update</strong>: Requests appear automatically as they arrive</li>
+      </ul>
+
+      <h4>User Profile (<code>/profile</code>)</h4>
+      <ul>
+        <li>View account information</li>
+        <li>Change your password</li>
+        <li>Manage your bins</li>
+        <li>See account statistics</li>
+      </ul>
+
+      <h4>Password Management</h4>
+      <ul>
+        <li><strong>Change Password</strong> (<code>/auth/change-password</code>): Update password while logged in</li>
+        <li><strong>Forgot Password</strong> (<code>/auth/forgot-password</code>): Request OTP via email</li>
+        <li><strong>Reset Password</strong> (<code>/auth/reset-password</code>): Reset password using OTP verification</li>
+        <li><strong>Security Features</strong>:
+          <ul>
+            <li>OTP codes expire after 24 hours</li>
+            <li>Single-use OTP for password reset</li>
+            <li>Minimum 8-character password requirement</li>
+            <li>Password confirmation to prevent typos</li>
+            <li>Secure password hashing with Werkzeug</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h4>Admin Panel (<code>/admin/users</code>) - Admin Only</h4>
+      <ul>
+        <li>User management</li>
+        <li>Approve/reject pending users</li>
+        <li>System statistics</li>
+        <li>Application monitoring</li>
+      </ul>
+
+      <h3>How to Use</h3>
+
+      <p><strong>1. Create a Bin</strong>:</p>
+      <pre><code># Via Web UI: Visit http://localhost:3200 and click "Create a RequestBin"
+# Via API: 
+curl -X POST http://localhost:3200/api/v1/bins</code></pre>
+
+      <p><strong>2. Send Requests to Your Bin</strong>:</p>
+      <pre><code>curl -X POST http://localhost:3200/&lt;your-bin-id&gt; \
+  -H "Content-Type: application/json" \
+  -d '{"test": "data"}'</code></pre>
+
+      <p><strong>3. Inspect Requests</strong>:</p>
+      <ul>
+        <li>Open <code>http://localhost:3200/&lt;your-bin-id&gt;?inspect</code> in your browser</li>
+        <li>Click any request in the left panel to view full details</li>
+        <li>Use the refresh button to update the list</li>
+        <li>Copy cURL commands for replaying requests</li>
+      </ul>
+
+      <p><strong>4. Share Your Bin</strong>:</p>
+      <ul>
+        <li>Share the bin URL with your webhook provider</li>
+        <li>Configure your application to send requests to the bin</li>
+        <li>Debug and test HTTP integrations in real-time</li>
+      </ul>
+
+      <h2>Quick Start</h2>
+      <p>Launch your own RequestBin Enterprise instance with Docker:</p>
+      <pre><code>docker run -p "8000:8000" babu3009/requestbin:latest</code></pre>
+      <p>The pre-build image is available in the Docker central repository as <a href="https://hub.docker.com/r/babu3009/requestbin" target="_blank">babu3009/requestbin</a>.</p>
+
+      <h3>Docker Compose with Storage Options</h3>
+      <p>Run RequestBin Enterprise with persistent storage using Docker Compose. Choose between Redis (default) or PostgreSQL storage backends.</p>
+
+      <h4>Start with Redis (Default)</h4>
+      <pre><code>docker-compose up -d</code></pre>
+
+      <h4>Start with PostgreSQL</h4>
+      <pre><code># Windows PowerShell
+Copy-Item .env.postgresql .env
+docker-compose up -d
+
+# Linux/Mac
+cp .env.postgresql .env
+docker-compose up -d</code></pre>
+
+      <h4>Switch Between Backends</h4>
+      <p><strong>Windows PowerShell:</strong></p>
+      <pre><code>.\switch-backend.ps1 postgresql    # Switch to PostgreSQL
+.\switch-backend.ps1 redis         # Switch to Redis
+.\switch-backend.ps1 status        # Check current backend
+docker-compose restart app         # Apply changes</code></pre>
+
+      <p><strong>Linux/Mac:</strong></p>
+      <pre><code>chmod +x switch-backend.sh         # First time only
+./switch-backend.sh postgresql     # Switch to PostgreSQL
+./switch-backend.sh redis          # Switch to Redis
+./switch-backend.sh status         # Check current backend
+docker-compose restart app         # Apply changes</code></pre>
+
+      <h2>Environment Variables</h2>
+      
+      <h3>Core Configuration</h3>
+      <ul>
+        <li><code>STORAGE_BACKEND</code>: Storage backend (memory/redis/postgresql)</li>
+        <li><code>PORT</code>: Application port (default: 3200)</li>
+        <li><code>DEBUG</code>: Enable debug mode</li>
+        <li><code>REALM</code>: Environment identifier (dev/prod)</li>
+        <li><code>FLASK_SESSION_SECRET_KEY</code>: Secret key for session encryption</li>
+      </ul>
+
+      <h3>PostgreSQL Configuration</h3>
+      <ul>
+        <li><code>POSTGRES_HOST</code>: PostgreSQL host</li>
+        <li><code>POSTGRES_PORT</code>: PostgreSQL port (default: 5432)</li>
+        <li><code>POSTGRES_USER</code>: Database user</li>
+        <li><code>POSTGRES_PASSWORD</code>: Database password</li>
+        <li><code>POSTGRES_DB</code>: Database name</li>
+        <li><code>POSTGRES_SCHEMA</code>: Schema name (default: requestbin_app)</li>
+      </ul>
+
+      <h3>Redis Configuration</h3>
+      <ul>
+        <li><code>REDIS_URL</code>: Redis connection URL</li>
+        <li><code>REDIS_HOST</code>: Redis host</li>
+        <li><code>REDIS_PORT</code>: Redis port (default: 6379)</li>
+        <li><code>REDIS_PASSWORD</code>: Redis password</li>
+      </ul>
+
+      <h3>Email Configuration (for OTP)</h3>
+      <ul>
+        <li><code>SMTP_HOST</code>: SMTP server hostname</li>
+        <li><code>SMTP_PORT</code>: SMTP port (default: 587)</li>
+        <li><code>SMTP_USER</code>: SMTP username</li>
+        <li><code>SMTP_PASSWORD</code>: SMTP password</li>
+        <li><code>SMTP_FROM_EMAIL</code>: Sender email address</li>
+        <li><code>SMTP_USE_TLS</code>: Enable TLS (default: True)</li>
+      </ul>
+
+      <h3>Application Settings</h3>
+      <ul>
+        <li><code>MAX_REQUESTS</code>: Max requests per bin (default: 20 dev, 200 prod)</li>
+        <li><code>BIN_TTL</code>: Bin lifetime in seconds (default: 345600 = 96 hours)</li>
+        <li><code>ENABLE_CORS</code>: Enable CORS support</li>
+        <li><code>CORS_ORIGINS</code>: Allowed CORS origins</li>
+        <li><code>AUTO_APPROVE_DOMAINS</code>: Auto-approved email domains</li>
+      </ul>
+
+      <h2>API Documentation</h2>
+      <p>These are only for programmatic use. For general use, directly use the Web UI.</p>
+
+      <h3>Bin Management</h3>
+      <ul>
+        <li><strong>Create a new bin</strong>: <code>POST /api/v1/bins</code>
+          <ul>
+            <li>Creates a new request bin</li>
+            <li>Optional form data: <code>private</code> (true/on), <code>custom_name</code></li>
+          </ul>
+        </li>
+        <li><strong>Get bin details</strong>: <code>GET /api/v1/bins/&lt;name&gt;</code>
+          <ul>
+            <li>Retrieves metadata/details for a specific bin</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Requests Management</h3>
+      <ul>
+        <li><strong>List all requests for a bin</strong>: <code>GET /api/v1/bins/&lt;bin&gt;/requests</code>
+          <ul>
+            <li>Returns all the requests made to the specified bin</li>
+          </ul>
+        </li>
+        <li><strong>Get a specific request</strong>: <code>GET /api/v1/bins/&lt;bin&gt;/requests/&lt;name&gt;</code>
+          <ul>
+            <li>Retrieves details for a specific request captured by the bin</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Statistics</h3>
+      <ul>
+        <li><strong>Get global statistics</strong>: <code>GET /api/v1/stats</code>
+          <ul>
+            <li><code>bin_count</code>: Total number of bins</li>
+            <li><code>request_count</code>: Total number of requests</li>
+            <li><code>avg_req_size_kb</code>: Average request size (in KB)</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2>Development</h2>
+      <p>The modular structure makes development easier with organized tools and scripts:</p>
+      
+      <h3>Running Locally</h3>
+      <pre><code># Run with PostgreSQL backend
+.\scripts\deployment\run-postgres.bat
+
+# Run with Memory backend
+./scripts/deployment/run-local-memory.ps1
+
+# Switch between backends
+./scripts/deployment/switch-backend.ps1 postgresql</code></pre>
+
+      <h3>Admin Tools</h3>
+      <pre><code># Create admin user
+python scripts/admin/create_admin.py
+
+# Change user password
+python scripts/admin/change_password.py</code></pre>
+
+      <h3>Database Management</h3>
+      <pre><code># Initialize PostgreSQL schema
+python scripts/database/init_postgres_schema.py</code></pre>
+
+      <h3>Debugging</h3>
+      <pre><code># Run diagnostics
+python scripts/debug/diagnose.py
+
+# Debug bin creation
+python scripts/debug/debug_bin_creation.py</code></pre>
+
+      <h2>Testing</h2>
+      <p>The project includes a comprehensive test suite:</p>
+
+      <h3>Running Tests</h3>
+      <pre><code># Run all tests
+python test/run_all_tests.py
+
+# Run specific test suites
+python test/test_smoke.py          # Quick sanity checks
+python test/test_websocket.py      # WebSocket functionality
+python test/test_ui_features.py    # UI/UX features
+python test/test_auth.py           # Authentication system</code></pre>
+
+      <h3>Test Coverage</h3>
+      <ul>
+        <li><strong>test_smoke.py</strong>: Quick smoke tests (8 tests)</li>
+        <li><strong>test_websocket.py</strong>: WebSocket tests (18 tests)</li>
+        <li><strong>test_ui_features.py</strong>: UI/UX tests (22 tests)</li>
+        <li><strong>test_auth.py</strong>: Authentication tests</li>
+        <li><strong>test_workflow.py</strong>: Integration tests</li>
+      </ul>
+
+      <h2>Troubleshooting</h2>
+
+      <h3>Common Issues</h3>
+
+      <h4>1. WebSocket Connection Errors</h4>
+      <p><strong>Symptom:</strong> <code>Error on request: AssertionError: write() before start_response</code></p>
+      <p><strong>Solution:</strong> Update SocketIO async mode to <code>gevent</code> in <code>requestbin/__init__.py</code> and restart the application.</p>
+
+      <h4>2. Database Connection Failed</h4>
+      <p><strong>Symptom:</strong> <code>psycopg2.OperationalError: could not connect to server</code></p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Verify PostgreSQL is running</li>
+        <li>Check connection settings in .env file</li>
+        <li>Ensure database exists</li>
+        <li>Initialize schema: <code>python scripts/database/init_postgres_schema.py</code></li>
+      </ul>
+
+      <h4>3. Module Import Errors</h4>
+      <p><strong>Symptom:</strong> <code>ModuleNotFoundError: No module named 'requestbin'</code></p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Ensure you're in the project root directory</li>
+        <li>Install dependencies: <code>pip install -r requirements.txt</code></li>
+        <li>Activate virtual environment: <code>conda activate requestbin</code></li>
+      </ul>
+
+      <h4>4. Requests Not Persisting</h4>
+      <p><strong>Symptom:</strong> Requests disappear after server restart</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Verify you're using PostgreSQL or Redis backend (not memory)</li>
+        <li>Check database connection is active</li>
+        <li>Verify schema is initialized</li>
+      </ul>
+
+      <h3>Getting Help</h3>
+      <ul>
+        <li>Check comprehensive docs in the <code>docs/</code> directory</li>
+        <li>Run diagnostics: <code>python scripts/debug/diagnose.py</code></li>
+        <li>Review application logs for error details</li>
+        <li>Check GitHub issues or create a new one</li>
+      </ul>
+
+      <h2>Open Source Contributors</h2>
+      <p>This project builds upon the work of many contributors:</p>
+
+      <h3>Core Contributors</h3>
+      <ul>
+        <li><strong>Jeff Lindsay</strong> (<a href="http://progrium.com" target="_blank">@progrium</a>) - Original creator of RequestBin</li>
+        <li><strong>babu3009</strong> - PostgreSQL support, SAP BTP deployment, modern UI enhancements</li>
+        <li><strong>Kinshuk Bairagi</strong> (<a href="https://github.com/kingster" target="_blank">@kingster</a>) - Maintenance and enhancements</li>
+        <li><strong>Barry Carlyon</strong> - Code contributions</li>
+      </ul>
+
+      <h3>Libraries and Technologies Used</h3>
+
+      <h4>Backend</h4>
+      <ul>
+        <li><strong>Flask 3.1.2</strong> - Web framework</li>
+        <li><strong>PostgreSQL</strong> - Persistent storage backend (via psycopg2)</li>
+        <li><strong>Redis</strong> - Alternative storage backend</li>
+        <li><strong>Flask-Login</strong> - User session management</li>
+        <li><strong>Flask-WTF</strong> - Form validation and CSRF protection</li>
+        <li><strong>Werkzeug</strong> - Password hashing and security utilities</li>
+        <li><strong>python-dotenv</strong> - Environment variable management</li>
+        <li><strong>psycopg2</strong> - PostgreSQL database adapter</li>
+      </ul>
+
+      <h4>Frontend</h4>
+      <ul>
+        <li><strong>Bootstrap 2.x</strong> - UI framework</li>
+        <li><strong>jQuery</strong> - JavaScript library</li>
+        <li><strong>Font Awesome</strong> - Icon library</li>
+        <li><strong>Google Code Prettify</strong> - Syntax highlighting</li>
+      </ul>
+
+      <h4>Deployment</h4>
+      <ul>
+        <li><strong>Docker</strong> - Containerization</li>
+        <li><strong>Gunicorn</strong> - WSGI HTTP server</li>
+        <li><strong>Werkzeug</strong> - WSGI utility library</li>
+      </ul>
+
+      <h4>Development Tools</h4>
+      <ul>
+        <li><strong>python-dotenv</strong> - Environment variable management</li>
+        <li><strong>Jinja2</strong> - Template engine</li>
+      </ul>
+
+      <h3>License</h3>
+      <p>MIT License - See LICENSE file for details</p>
+
+      <h3>Special Thanks</h3>
+      <ul>
+        <li>Original RequestBin project by Jeff Lindsay</li>
+        <li>All contributors who have helped improve this project</li>
+        <li>Open source community for the amazing tools and libraries</li>
+      </ul>
+    </div>
+{% endblock %}

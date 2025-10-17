@@ -123,3 +123,22 @@ def short_date(input):
         return ""
 
     return dt.strftime("%b %d, %Y")
+
+
+def format_datetime(ts, format_str='%Y-%m-%d %H:%M:%S'):
+    """Format a Unix timestamp as a formatted datetime string."""
+    if not isinstance(ts, (int, float, complex)):
+        return ""
+    
+    dt = datetime.datetime.utcfromtimestamp(float(ts))
+    return dt.strftime(format_str)
+
+
+def format_timezone(ts):
+    """Get timezone abbreviation from a Unix timestamp."""
+    if not isinstance(ts, (int, float, complex)):
+        return ""
+    
+    dt = datetime.datetime.utcfromtimestamp(float(ts))
+    # Return UTC for now, can be made configurable later
+    return "UTC"

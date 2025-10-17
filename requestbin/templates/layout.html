@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{% block title %}RequestBin &mdash; Collect, inspect and debug HTTP requests and webhooks{% endblock %}</title>
+    <title>{% block title %}RequestBin Enterprise &mdash; Collect, inspect and debug HTTP requests and webhooks{% endblock %}</title>
     {% block icon %}<link href="/static/img/logo.png" rel="shortcut icon" />{% endblock %}
     <link href="/static/css/bootstrap.css" rel="stylesheet" media="screen">
     <link href="/static/css/responsive.css" rel="stylesheet" media="screen">
@@ -9,27 +9,53 @@
     <link href="/static/css/font-awesome.min.css" rel="stylesheet" media="screen">
     <link type="text/css" href="/static/css/prettify.css" rel="stylesheet" />
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/static/js/prettify.js"></script>
     <script type="text/javascript" src="/static/js/app.js"></script>
     {% block head %}{% endblock %}
   </head>
   <body onload="prettyPrint()">
 
-    <div class="runscope-wrap">
-        <div class="row-fluid">
-            <p class="tagline">A <a href="https://github.com/kingster/requestbin"><strong>OpenSource</strong></a> community project. </a></p>
-        </div>
-    </div>
     <div class="header-wrap">
         <header class="row-fluid">
             <div class="span12">
               <h1 class="logo">
                 <a href="/"><img src="/static/img/logo-2x.png" height="38" width="44" /></a>
-                <a href="/"><span class="logo-accent">Request</span>Bin</a>
+                <a href="/"><span class="logo-accent">Request</span>Bin Enterprise</a>
               </h1>
                 <nav>
                     <ul class="nav-menu">
                         <li>{% block binurl %}{% endblock %}</li>
+                        {% if current_user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon-user"></i> {{ current_user.email }} <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/"><i class="icon-home"></i> Home</a></li>
+                                <li><a href="/about"><i class="icon-info-sign"></i> About</a></li>
+                                <li><a href="/profile"><i class="icon-user"></i> Profile</a></li>
+                                {% if current_user.is_admin %}
+                                <li><a href="/admin/users"><i class="icon-shield"></i> Admin</a></li>
+                                {% endif %}
+                                <li class="divider"></li>
+                                <li><a href="/logout"><i class="icon-signout"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon-user"></i> Account <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/"><i class="icon-home"></i> Home</a></li>
+                                <li><a href="/about"><i class="icon-info-sign"></i> About</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/login"><i class="icon-signin"></i> Login</a></li>
+                                <li><a href="/register"><i class="icon-edit"></i> Register</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
                     </ul>
                 </nav>
             </div>
@@ -37,6 +63,19 @@
     </div>
 
     <div id="content" class="row-fluid">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="span12">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      
       {% set width = 12 %}
       {% if recent %} {% set width = 10 %} {% endif %}
       <div class="span{{width}} content-wrap">
@@ -70,9 +109,7 @@
     <div class="footer-wrap">
         <footer class="row-fluid">
             <div class="span12">
-               
-
-                <p class="copyright">RequestBin originally created by <a href="http://progrium.com">Jeff Lindsay</a>. <br>MIT Licence</p>
+                <p class="copyright">RequestBin Enterprise by <strong>babu3009</strong><br>MIT Licence</p>
             </div>
         </footer>
     </div>

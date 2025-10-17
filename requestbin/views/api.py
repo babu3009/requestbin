@@ -2,7 +2,9 @@ import json
 import operator
 import base64
 from flask import session, make_response, request, render_template
-from requestbin import app, db
+from flask_login import current_user, login_required
+from requestbin import app
+from requestbin.database import db
 
 class BytesEncoder(json.JSONEncoder):
     def default(self, o):
@@ -25,10 +27,15 @@ def _response(object, code=200):
 
 
 @app.endpoint('api.bins')
+@login_required
 def bins():
+    """Create a new bin - requires authentication"""
+    if not current_user.is_approved:
+        return _response({'error': 'Your account is pending approval'}, 403)
+    
     private = request.form.get('private') in ['true', 'on']
     custom_name = request.form.get('custom_name') if request.form.get('custom_name') != "" else None
-    bin = db.create_bin(private, custom_name)
+    bin = db.create_bin(private, custom_name, owner_email=current_user.email)
     if bin.private:
         session[bin.name] = bin.secret_key
     return _response(bin.to_dict())

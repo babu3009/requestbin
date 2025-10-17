@@ -1,10 +1,61 @@
+# Python
 **/**/*.pyc
 *.egg-info
 **/*.pyc
-serviced.log
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info
+.installed.cfg
+*.egg
 
+# Logs
+serviced.log
+*.log
+*.pid
+
+# IDE
 codekit-config.json
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # Mac Files
 **/.DS_Store
+.DS_Store
+Thumbs.db
+
+# Virtual Environment
 venv/
+ENV/
+env/
+
+# Environment - ignore active .env but keep templates
+.env
+!.env.redis
+!.env.postgresql
+.env.backup
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+docker-compose.override.yml
+

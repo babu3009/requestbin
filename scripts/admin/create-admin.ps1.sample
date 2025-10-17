@@ -1,0 +1,33 @@
+# Sample Create Admin User Script for PostgreSQL Backend
+# Copy this to 'create-admin.ps1' and fill in your details.
+
+Write-Host "=====================================================================" -ForegroundColor Cyan
+Write-Host "  Creating Admin User for RequestBin (PostgreSQL)" -ForegroundColor Green
+Write-Host "=====================================================================" -ForegroundColor Cyan
+
+# --- Environment variables ---
+# Replace with your actual PostgreSQL and admin details
+$env:POSTGRES_SCHEMA = "requestbin_app"
+$env:POSTGRES_HOST = "localhost"
+$env:POSTGRES_PORT = "5432"
+$env:POSTGRES_DB = "<your_postgres_db>"
+$env:POSTGRES_USER = "<your_postgres_user>"
+$env:POSTGRES_PASSWORD = "<your_postgres_password>"
+$env:ADMIN_EMAIL = "admin@example.com"
+$env:ADMIN_PASSWORD = "<your_strong_admin_password>"
+
+# Activate conda environment and run script
+& C:\ProgramData\miniforge3\shell\condabin\conda-hook.ps1
+conda activate requestbin
+
+Write-Host ""
+# Assumes create_admin.py is in the same directory
+python create_admin.py
+
+Write-Host ""
+Write-Host "=====================================================================" -ForegroundColor Cyan
+Write-Host "  You can now login with:" -ForegroundColor Yellow
+Write-Host "  Email:    $env:ADMIN_EMAIL" -ForegroundColor White
+Write-Host "  Password: (the one you set)" -ForegroundColor White
+Write-Host "=====================================================================" -ForegroundColor Cyan
+Write-Host ""
