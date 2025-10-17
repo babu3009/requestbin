@@ -1,0 +1,44 @@
+---
+# SAMPLE SAP BTP Cloud Foundry Manifest for RequestBin with PostgreSQL
+# --------------------------------------------------------------------
+# INSTRUCTIONS:
+# 1. Copy this file to 'manifest-postgresql.yml'.
+# 2. Replace all placeholder values (e.g., <your-cf-domain>) with your actual configuration.
+# 3. Do NOT commit the filled 'manifest-postgresql.yml' file to your repository.
+# --------------------------------------------------------------------
+applications:
+- name: requestbin-app
+  routes:
+    - route: requestbin-app.<your-cf-domain> # e.g., requestbin-app.cfapps.eu10-004.hana.ondemand.com
+  memory: 256M
+  instances: 1
+  buildpacks:
+    - python_buildpack
+  command: python web.py
+  services:
+    - <your-postgres-service-instance>  # e.g., postgres
+  env:
+    REALM: prod
+    FLASK_ENV: production
+    BP_REQUIREMENTS_FILE: requirements.txt
+    BP_PYTHON_VERSION: 3.10.17
+    STORAGE_BACKEND: requestbin.storage.postgresql.PostgreSQLStorage
+    POSTGRES_SCHEMA: requestbin_app
+    MAX_REQUESTS: 200
+    
+    # --- Authentication configuration ---
+    # Replace with your desired admin credentials
+    ADMIN_EMAIL: admin@<your-domain>.com
+    ADMIN_PASSWORD: <your-strong-admin-password>
+    AUTO_APPROVE_DOMAINS: your-company.com,another-domain.com
+    # Generate a new secret key for sessions. You can use: python -c 'import secrets; print(secrets.token_hex(32))'
+    FLASK_SESSION_SECRET_KEY: <generate-a-new-secret-key>
+    
+    # --- SMTP Email configuration for OTP verification ---
+    # Replace with your actual SMTP server details
+    SMTP_HOST: <your-smtp-host> # e.g., smtp.gmail.com, smtp.office365.com
+    SMTP_PORT: 587
+    SMTP_USER: <your-smtp-user>
+    SMTP_PASSWORD: <your-smtp-password>
+    SMTP_USE_TLS: "true"
+    SMTP_FROM_EMAIL: <your-smtp-from-email> # e.g., no-reply@your-domain.com

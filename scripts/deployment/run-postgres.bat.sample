@@ -1,0 +1,53 @@
+@echo off
+REM Sample Batch file to run RequestBin with PostgreSQL backend
+REM Copy this file to 'run-postgres.bat' and fill in your details.
+
+echo ========================================================================
+echo Starting RequestBin with PostgreSQL Backend
+echo ========================================================================
+echo.
+
+REM Storage backend configuration
+set STORAGE_BACKEND=requestbin.storage.postgresql.PostgreSQLStorage
+set POSTGRES_SCHEMA=requestbin_app
+
+REM --- PostgreSQL connection settings ---
+REM Replace with your actual PostgreSQL connection details
+set POSTGRES_HOST=localhost
+set POSTGRES_PORT=5432
+set POSTGRES_DB=<your_postgres_db>
+set POSTGRES_USER=<your_postgres_user>
+set POSTGRES_PASSWORD=<your_postgres_password>
+
+REM --- Authentication configuration ---
+REM Replace with your desired admin credentials
+set ADMIN_EMAIL=admin@example.com
+set ADMIN_PASSWORD=<your_strong_admin_password>
+set AUTO_APPROVE_DOMAINS=example.com
+
+REM --- Session configuration ---
+REM Generate a new secret key. You can use: python -c "import secrets; print(secrets.token_hex(32))"
+set FLASK_SESSION_SECRET_KEY=<generate-a-new-secret-key>
+
+REM Application settings
+set MAX_REQUESTS=200
+set REALM=local
+
+echo Environment variables set:
+echo   STORAGE_BACKEND: PostgreSQL
+echo   POSTGRES_HOST: %POSTGRES_HOST%
+echo.
+echo Starting application on http://localhost:3200
+echo Login with: %ADMIN_EMAIL% / %ADMIN_PASSWORD%
+echo.
+echo ========================================================================
+echo.
+
+REM Initialize conda for batch (adjust path if necessary)
+call C:\ProgramData\miniforge3\Scripts\activate.bat C:\ProgramData\miniforge3
+
+REM Activate requestbin environment
+call conda activate requestbin
+
+REM Run the application
+python web.py
