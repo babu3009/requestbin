@@ -10,7 +10,10 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "http://localhost:4000"
+import time
+import json
+
+BASE_URL = "http://localhost:3200"
 BIN_NAME = "6b4crirj"  # Use existing bin or create new one
 
 def send_test_requests():
@@ -19,7 +22,7 @@ def send_test_requests():
     bin_url = f"{BASE_URL}/{BIN_NAME}"
     
     print("=" * 70)
-    print("Testing RequestBin Split-Panel Inspect View")
+    print("Testing RequestBin Enterprise Split-Panel Inspect View")
     print("=" * 70)
     print(f"\nSending test requests to: {bin_url}")
     print(f"View results at: {bin_url}?inspect\n")

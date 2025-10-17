@@ -5,7 +5,7 @@ PostgreSQL implementation of authentication storage
 import psycopg2
 from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import RealDictCursor
-from requestbin.auth import AuthStorage, User
+from requestbin.auth.models import AuthStorage, User
 from requestbin import config
 import time
 

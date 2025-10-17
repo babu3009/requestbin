@@ -33,6 +33,54 @@ function copyToClipboard(id) {
     }
 }
 
+function copyBinUrl() {
+    var input = document.getElementById('bin-url-input');
+    if (input) {
+        var url = input.value;
+        navigator.clipboard.writeText(url).then(function() {
+            // Visual feedback
+            var btn = event.target.closest('button');
+            if (btn) {
+                var originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="icon-ok"></i>';
+                btn.classList.add('btn-success');
+                setTimeout(function() {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                }, 2000);
+            }
+        }).catch(function(err) {
+            console.error('Failed to copy: ', err);
+            // Fallback: select the text
+            input.select();
+        });
+    }
+}
+
+function copyBinUrlLarge() {
+    var input = document.getElementById('bin-url-input-large');
+    if (input) {
+        var url = input.value;
+        navigator.clipboard.writeText(url).then(function() {
+            // Visual feedback
+            var btn = event.target.closest('button');
+            if (btn) {
+                var originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="icon-ok"></i> Copied!';
+                btn.classList.add('btn-success');
+                setTimeout(function() {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                }, 2000);
+            }
+        }).catch(function(err) {
+            console.error('Failed to copy: ', err);
+            // Fallback: select the text
+            input.select();
+        });
+    }
+}
+
 function showRequestDetail(requestId) {
     // Remove active class from all list items
     var listItems = document.querySelectorAll('.request-list-item');

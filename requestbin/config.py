@@ -10,9 +10,9 @@ load_dotenv(override=False)
 DEBUG = True
 REALM = os.environ.get('REALM', 'local')
 
-ROOT_URL = "http://localhost:4000"
+ROOT_URL = "http://localhost:3200"
 
-PORT_NUMBER = 4000
+PORT_NUMBER = 3200
 
 ENABLE_CORS = False
 CORS_ORIGINS = "*"

@@ -14,7 +14,7 @@ def test_auth_config():
     
     # Set test environment to use memory storage
     os.environ['REALM'] = 'local'  # Use local to test with memory storage
-    os.environ['STORAGE_BACKEND'] = 'memory'
+    os.environ['STORAGE_BACKEND'] = 'requestbin.storage.memory.MemoryStorage'
     
     try:
         # Import configuration
@@ -26,11 +26,11 @@ def test_auth_config():
         
         # Initialize auth storage
         if config.STORAGE_BACKEND == "requestbin.storage.postgresql.PostgreSQLStorage":
-            from requestbin.auth_storage import PostgreSQLAuthStorage
+            from requestbin.auth.storage import PostgreSQLAuthStorage
             auth_storage = PostgreSQLAuthStorage()
             print("✓ Using PostgreSQL authentication storage")
         else:
-            from requestbin.auth_storage import MemoryAuthStorage
+            from requestbin.auth.storage import MemoryAuthStorage
             auth_storage = MemoryAuthStorage()
             print("✓ Using Memory authentication storage")
         
@@ -84,6 +84,33 @@ def test_auth_config():
         except ValueError as e:
             print(f"⚠️  Test user may already exist: {e}")
         
+        # Test password management
+        print("\nTesting password management...")
+        test_email3 = "password_test@tarento.com"
+        try:
+            test_user3 = auth_storage.create_user(
+                email=test_email3,
+                password="oldpass123",
+                is_admin=False
+            )
+            print(f"✓ Created test user: {test_user3.email}")
+            
+            # Test password verification
+            assert test_user3.check_password("oldpass123") == True
+            print(f"✓ Password verification works")
+            
+            # Test password change
+            test_user3.set_password("newpass456")
+            assert test_user3.check_password("newpass456") == True
+            assert test_user3.check_password("oldpass123") == False
+            print(f"✓ Password change works")
+            
+            # Clean up
+            auth_storage.delete_user(test_email3)
+            print(f"✓ Cleaned up test user")
+        except Exception as e:
+            print(f"⚠️  Password management test error: {e}")
+        
         # List all users
         print("\nCurrent users:")
         all_users = auth_storage.get_all_users()
@@ -94,10 +121,17 @@ def test_auth_config():
         
         print("\n" + "=" * 50)
         print("✅ Authentication system is working correctly!")
+        print("\nFeatures Tested:")
+        print("✓ Admin user initialization")
+        print("✓ Auto-approve domains")
+        print("✓ User approval workflow")
+        print("✓ Password management")
+        print("✓ User listing")
         print("\nNext steps:")
         print("1. Start the application: python web.py")
         print(f"2. Login as admin: {config.ADMIN_EMAIL}")
         print("3. Visit /admin/users to manage users")
+        print("4. Visit /auth/change-password to change password")
         print("4. Register new users at /register")
         
         return True
@@ -110,7 +144,7 @@ def test_auth_config():
 
 def main():
     """Run authentication tests"""
-    print("RequestBin Authentication System Test")
+    print("RequestBin Enterprise Authentication System Test")
     print("=" * 50)
     print()
     

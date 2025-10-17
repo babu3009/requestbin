@@ -1,20 +1,83 @@
 {% extends "layout.html" %}
-{% block title %}RequestBin - {{bin.name}}{% endblock %}
+{% block title %}RequestBin Enterprise - {{bin.name}}{% endblock %}
 {% block icon %}<link rel="shortcut icon" href="{{bin.favicon_uri}}" />{% endblock %}
 
 {% block sidebar %}{% endblock %}
 
-{% block binurl %}
-  <a href="/{{bin.name}}?inspect"><i class="icon-circle icon-2x" style="color: rgb{{bin.color}}"></i></a>
-  <input type="text" value="{{base_url}}/{{bin.name}}" onclick="this.select()" />
-  {% if bin.private %}<i class="icon-lock"></i>{% endif %}
-{% endblock %}
+{% block binurl %}{% endblock %}
 
 {% block head %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+var socket = null;
+var binName = '{{bin.name}}';
+var hasRequests = {% if bin.requests %}true{% else %}false{% endif %};
+
+// Initialize Socket.IO connection
+function initWebSocket() {
+    socket = io({
+        transports: ['websocket', 'polling']
+    });
+    
+    socket.on('connect', function() {
+        console.log('WebSocket connected');
+        // Join room for this specific bin
+        socket.emit('join', {bin_name: binName});
+    });
+    
+    socket.on('disconnect', function() {
+        console.log('WebSocket disconnected');
+    });
+    
+    socket.on('bin_updated', function(data) {
+        console.log('Bin updated:', data);
+        if (data.bin_name === binName) {
+            // If we had no requests and now we have some, reload the page
+            if (!hasRequests && data.request_count > 0) {
+                window.location.reload();
+            } else if (hasRequests) {
+                // Auto-refresh the table if we already have requests
+                window.location.reload();
+            }
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initWebSocket();
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', function() {
+    if (socket) {
+        socket.disconnect();
+    }
+});
+</script>
 {% endblock %}
 
 {% block content %}
     {% if bin.requests %}
+      <!-- Bin URL Bar -->
+      <div class="bin-url-bar">
+        <div class="bin-url-content">
+          <a href="/{{bin.name}}?inspect" class="bin-color-indicator">
+            <i class="icon-circle" style="color: rgb{{bin.color}}; font-size: 20px;"></i>
+          </a>
+          <label style="margin: 0 10px 0 5px; font-weight: bold; color: #555;">Bin URL:</label>
+          <input type="text" id="bin-url-input" class="bin-url-input-field" value="{{base_url}}/{{bin.name}}" onclick="this.select()" readonly />
+          <button class="btn btn-small btn-primary" onclick="copyBinUrl()" title="Copy to clipboard" style="margin-left: 8px;">
+            <i class="icon-copy"></i> Copy
+          </button>
+          {% if bin.private %}
+          <span style="margin-left: 10px; color: #999;">
+            <i class="icon-lock"></i> Private
+          </span>
+          {% endif %}
+        </div>
+      </div>
+
       <div class="split-view-container">
         <!-- Left Panel: Request List -->
         <div class="request-list-panel">
@@ -168,7 +231,11 @@
 
       <h4 class="text-center">Bin URL</h4>
       <h2 class="text-center">
-        <input class="xxlarge input-xxlarge" type="text" value="{{base_url}}/{{bin.name}}" onclick="this.select()" style="border-color: rgb{{bin.color}}; border-width: 3px;" /></h2>
+        <input class="xxlarge input-xxlarge" id="bin-url-input-large" type="text" value="{{base_url}}/{{bin.name}}" onclick="this.select()" style="border-color: rgb{{bin.color}}; border-width: 3px;" readonly />
+        <button class="btn btn-primary" onclick="copyBinUrlLarge()" title="Copy to clipboard" style="margin-left: 10px; vertical-align: middle;">
+          <i class="icon-copy"></i> Copy URL
+        </button>
+      </h2>
       <p class="text-center">{% if bin.private %}This is a private bin. Requests are only viewable from this computer.{% endif %}
 
       <hr>

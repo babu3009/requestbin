@@ -1,10 +1,11 @@
 import urllib
 
-from flask import (make_response, redirect, render_template, request, session,
-                   url_for)
+from flask import (flash, make_response, redirect, render_template, request, 
+                   session, url_for)
 from flask_login import current_user
 
-from requestbin import app, db, config
+from requestbin import app, config, socketio
+from requestbin.database import db
 
 
 def update_recent_bins(name):
@@ -20,7 +21,7 @@ def update_recent_bins(name):
 
 
 def expand_recent_bins():
-    """Get recent bins - user-specific if authenticated, session-based otherwise"""
+    """Get recent bins - user-specific if authenticated, empty for non-authenticated"""
     from requestbin import config
     recent = []
     
@@ -31,7 +32,7 @@ def expand_recent_bins():
         session["recent"] = []
         session.modified = True
     
-    # For authenticated users, show their bins from database
+    # Only show history for authenticated users
     if current_user.is_authenticated:
         try:
             user_bins = db.get_bins_by_owner(current_user.email)
@@ -41,11 +42,8 @@ def expand_recent_bins():
             recent = user_bins[:10]
         except Exception as e:
             print(f"Error fetching user bins: {e}")   
-            # Fallback to session-based recent bins
-            recent = _get_session_recent_bins()
-    else:
-        # For non-authenticated users, use session-based recent bins
-        recent = _get_session_recent_bins()
+            recent = []
+    # For non-authenticated users, return empty list (no history shown)
     
     return recent
 
@@ -80,6 +78,10 @@ def bin(name):
     except KeyError:
         return "Bin Not found\n", 404
     if request.query_string.decode() == "inspect":
+        # Require authentication to view inspect page
+        if not current_user.is_authenticated:
+            flash("Please login to view bin details.", "warning")
+            return redirect(url_for('auth.login', next=request.url))
         if bin.private and session.get(bin.name) != bin.secret_key:
             return "Private bin\n", 403
         update_recent_bins(name)
@@ -89,6 +91,11 @@ def bin(name):
         )
     else:
         db.create_request(bin, request)
+        # Emit WebSocket event for real-time update
+        socketio.emit('bin_updated', {
+            'bin_name': name,
+            'request_count': len(bin.requests) if hasattr(bin, 'requests') and bin.requests else 1
+        }, room=name)
         resp = make_response("ok\n")
         return resp
 

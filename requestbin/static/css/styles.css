@@ -5,6 +5,22 @@
 #recent li {
   margin-bottom: 4px;
 }
+
+/* History sidebar positioning */
+.span2 {
+  position: fixed;
+  right: 20px;
+  top: 100px;
+  width: 200px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.content-wrap {
+  padding-right: 240px;
+}
+
 .banner-button {
   margin: 25px 0;
 }
@@ -748,6 +764,46 @@ input.xxlarge {
   border: 1px solid #ccc; 
   padding: 10px; 
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Bin URL Bar */
+.bin-url-bar {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.bin-url-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bin-color-indicator {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.bin-url-input-field {
+  flex: 1;
+  min-width: 300px;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background: #fff;
+}
+
+.bin-url-input-field:focus {
+  outline: none;
+  border-color: #66afe9;
+  box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);
 }
 
 /* Split-panel Outlook-style layout */

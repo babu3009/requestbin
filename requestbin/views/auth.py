@@ -6,8 +6,8 @@ Handles login, logout, registration, user management, and OTP email verification
 from flask import render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, current_user, login_required
 from requestbin import app, auth_db, config
-from requestbin.forms import LoginForm, RegistrationForm, ChangePasswordForm
-from requestbin.email_utils import send_otp_email, send_approval_notification
+from requestbin.auth.forms import LoginForm, RegistrationForm, ChangePasswordForm, ForgotPasswordForm, ResetPasswordForm
+from requestbin.auth.utils import send_otp_email, send_approval_notification
 from functools import wraps
 
 
@@ -257,3 +257,129 @@ def resend_otp():
     
     flash('A new OTP code has been sent to your email.', 'success')
     return redirect(url_for('auth.verify_email'))
+
+
+@app.endpoint('auth.change_password')
+@login_required
+def change_password():
+    """Change password for logged-in user"""
+    form = ChangePasswordForm()
+    
+    if form.validate_on_submit():
+        # Verify current password
+        if not current_user.check_password(form.current_password.data):
+            flash('Current password is incorrect.', 'danger')
+            return render_template('auth/change_password.html', form=form)
+        
+        # Update password
+        current_user.set_password(form.new_password.data)
+        auth_db.update_user(current_user)
+        
+        flash('Your password has been changed successfully!', 'success')
+        return redirect(url_for('auth.profile'))
+    
+    return render_template('auth/change_password.html', form=form)
+
+
+@app.endpoint('auth.forgot_password')
+def forgot_password():
+    """Forgot password - send OTP to email"""
+    if current_user.is_authenticated:
+        return redirect(url_for('views.home'))
+    
+    form = ForgotPasswordForm()
+    
+    if form.validate_on_submit():
+        user = auth_db.get_user(form.email.data)
+        
+        if user:
+            # Generate OTP for password reset
+            user.generate_otp()
+            auth_db.update_user(user)
+            
+            # Send OTP email
+            send_otp_email(user.email, user.otp_code)
+            
+            # Store email in session for reset page
+            session['reset_email'] = user.email
+            
+            flash(f'An OTP code has been sent to {user.email}. Please check your email.', 'success')
+            return redirect(url_for('auth.reset_password'))
+        else:
+            # Don't reveal if email exists or not for security
+            flash(f'If an account exists with {form.email.data}, an OTP code has been sent.', 'info')
+    
+    return render_template('auth/forgot_password.html', form=form)
+
+
+@app.endpoint('auth.reset_password')
+def reset_password():
+    """Reset password with OTP verification"""
+    if current_user.is_authenticated:
+        return redirect(url_for('views.home'))
+    
+    # Get email from session
+    email = session.get('reset_email')
+    if not email:
+        flash('Please start the password reset process by entering your email.', 'warning')
+        return redirect(url_for('auth.forgot_password'))
+    
+    form = ResetPasswordForm()
+    
+    # Pre-fill email from session
+    if request.method == 'GET':
+        form.email.data = email
+    
+    if form.validate_on_submit():
+        user = auth_db.get_user(form.email.data)
+        
+        if not user:
+            flash('User not found.', 'danger')
+            session.pop('reset_email', None)
+            return redirect(url_for('auth.forgot_password'))
+        
+        # Verify OTP
+        if user.verify_otp(form.otp.data):
+            # OTP is valid, update password
+            user.set_password(form.new_password.data)
+            auth_db.update_user(user)
+            
+            # Clear session
+            session.pop('reset_email', None)
+            
+            flash('Your password has been reset successfully! You can now log in with your new password.', 'success')
+            return redirect(url_for('auth.login'))
+        else:
+            if not user.is_otp_valid():
+                flash('OTP has expired. Please request a new one.', 'danger')
+                session.pop('reset_email', None)
+                return redirect(url_for('auth.forgot_password'))
+            else:
+                flash('Invalid OTP code. Please try again.', 'danger')
+    
+    return render_template('auth/reset_password.html', form=form, email=email)
+
+
+@app.endpoint('auth.resend_reset_otp')
+def resend_reset_otp():
+    """Resend OTP code for password reset"""
+    email = session.get('reset_email')
+    if not email:
+        flash('No pending password reset found.', 'warning')
+        return redirect(url_for('auth.forgot_password'))
+    
+    user = auth_db.get_user(email)
+    if not user:
+        flash('User not found.', 'danger')
+        session.pop('reset_email', None)
+        return redirect(url_for('auth.forgot_password'))
+    
+    # Generate new OTP
+    user.generate_otp()
+    auth_db.update_user(user)
+    
+    # Send email
+    send_otp_email(user.email, user.otp_code)
+    
+    flash('A new OTP code has been sent to your email.', 'success')
+    return redirect(url_for('auth.reset_password'))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Comprehensive module test for RequestBin with Authentication
+Comprehensive module test for RequestBin Enterprise with Authentication
 Tests all modules individually
 """
 
@@ -9,7 +9,7 @@ import sys
 
 # Set environment for testing
 os.environ['REALM'] = 'local'
-os.environ['STORAGE_BACKEND'] = 'memory'
+os.environ['STORAGE_BACKEND'] = 'requestbin.storage.memory.MemoryStorage'
 
 def test_module_imports():
     """Test all module imports"""
@@ -84,38 +84,98 @@ def test_module_imports():
     print("\n3. Authentication Modules:")
     try:
         import requestbin.auth
-        print("  ✓ requestbin.auth")
+        print("  ✓ requestbin.auth (package)")
         tests_passed += 1
     except Exception as e:
         print(f"  ✗ requestbin.auth - {e}")
         tests_failed += 1
     
     try:
-        import requestbin.auth_storage
-        print("  ✓ requestbin.auth_storage")
+        import requestbin.auth.models
+        print("  ✓ requestbin.auth.models")
         tests_passed += 1
     except Exception as e:
-        print(f"  ✗ requestbin.auth_storage - {e}")
+        print(f"  ✗ requestbin.auth.models - {e}")
         tests_failed += 1
     
     try:
-        import requestbin.forms
-        print("  ✓ requestbin.forms")
+        import requestbin.auth.storage
+        print("  ✓ requestbin.auth.storage")
         tests_passed += 1
     except Exception as e:
-        print(f"  ✗ requestbin.forms - {e}")
+        print(f"  ✗ requestbin.auth.storage - {e}")
         tests_failed += 1
     
     try:
-        import requestbin.auth_views
-        print("  ✓ requestbin.auth_views")
+        import requestbin.auth.forms
+        print("  ✓ requestbin.auth.forms")
         tests_passed += 1
     except Exception as e:
-        print(f"  ✗ requestbin.auth_views - {e}")
+        print(f"  ✗ requestbin.auth.forms - {e}")
         tests_failed += 1
     
-    # Test 4: Flask application modules
-    print("\n4. Flask Application Modules:")
+    try:
+        import requestbin.auth.utils
+        print("  ✓ requestbin.auth.utils")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.auth.utils - {e}")
+        tests_failed += 1
+    
+    # Test 4: View modules
+    print("\n4. View Modules:")
+    try:
+        import requestbin.views
+        print("  ✓ requestbin.views (package)")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.views - {e}")
+        tests_failed += 1
+    
+    try:
+        import requestbin.views.main
+        print("  ✓ requestbin.views.main")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.views.main - {e}")
+        tests_failed += 1
+    
+    try:
+        import requestbin.views.api
+        print("  ✓ requestbin.views.api")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.views.api - {e}")
+        tests_failed += 1
+    
+    try:
+        import requestbin.views.auth
+        print("  ✓ requestbin.views.auth")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.views.auth - {e}")
+        tests_failed += 1
+    
+    # Test 5: Database modules
+    print("\n5. Database Modules:")
+    try:
+        import requestbin.database
+        print("  ✓ requestbin.database (package)")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.database - {e}")
+        tests_failed += 1
+    
+    try:
+        import requestbin.database.db
+        print("  ✓ requestbin.database.db")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.database.db - {e}")
+        tests_failed += 1
+    
+    # Test 6: Flask application and exports
+    print("\n6. Flask Application & Exports:")
     try:
         from requestbin import app
         print("  ✓ requestbin.app (Flask application)")
@@ -133,27 +193,19 @@ def test_module_imports():
         tests_failed += 1
     
     try:
-        import requestbin.api
-        print("  ✓ requestbin.api")
-        tests_passed += 1
-    except Exception as e:
-        print(f"  ✗ requestbin.api - {e}")
-        tests_failed += 1
-    
-    try:
-        import requestbin.views
-        print("  ✓ requestbin.views")
-        tests_passed += 1
-    except Exception as e:
-        print(f"  ✗ requestbin.views - {e}")
-        tests_failed += 1
-    
-    try:
-        import requestbin.db
-        print("  ✓ requestbin.db")
+        from requestbin import db
+        print("  ✓ requestbin.db (Database storage)")
         tests_passed += 1
     except Exception as e:
         print(f"  ✗ requestbin.db - {e}")
+        tests_failed += 1
+    
+    try:
+        from requestbin import socketio
+        print("  ✓ requestbin.socketio (WebSocket support)")
+        tests_passed += 1
+    except Exception as e:
+        print(f"  ✗ requestbin.socketio - {e}")
         tests_failed += 1
     
     # Summary
@@ -178,7 +230,7 @@ def test_functionality():
     # Test User class
     print("\n1. User Class:")
     try:
-        from requestbin.auth import User
+        from requestbin.auth.models import User
         user = User(email="test@example.com", is_admin=False)
         user.set_password("password123")
         
@@ -198,7 +250,7 @@ def test_functionality():
     # Test Auto-approval
     print("\n2. Auto-Approval Logic:")
     try:
-        from requestbin.auth import User
+        from requestbin.auth.models import User
         import requestbin.config as config
         
         user1 = User(email="test@tarento.com")
@@ -217,7 +269,7 @@ def test_functionality():
     # Test Memory Storage
     print("\n3. Memory Storage:")
     try:
-        from requestbin.auth_storage import MemoryAuthStorage
+        from requestbin.auth.storage import MemoryAuthStorage
         storage = MemoryAuthStorage()
         
         # Create user
@@ -249,7 +301,7 @@ def test_functionality():
     # Test Forms
     print("\n4. Flask Forms:")
     try:
-        from requestbin.forms import LoginForm, RegistrationForm
+        from requestbin.auth.forms import LoginForm, RegistrationForm
         from requestbin import app
         
         with app.test_request_context():
@@ -287,13 +339,19 @@ def test_functionality():
         assert '/register' in routes
         assert '/profile' in routes
         assert '/admin/users' in routes
+        assert '/auth/change-password' in routes
+        assert '/auth/forgot-password' in routes
+        assert '/auth/reset-password' in routes
         
         print("  ✓ /login")
         print("  ✓ /logout")
         print("  ✓ /register")
         print("  ✓ /profile")
         print("  ✓ /admin/users")
-        tests_passed += 5
+        print("  ✓ /auth/change-password")
+        print("  ✓ /auth/forgot-password")
+        print("  ✓ /auth/reset-password")
+        tests_passed += 8
     except Exception as e:
         print(f"  ✗ Route tests - {e}")
         tests_failed += 1
@@ -311,7 +369,7 @@ def test_functionality():
 def main():
     """Run all tests"""
     print("\n" + "█" * 60)
-    print("REQUESTBIN COMPREHENSIVE MODULE TESTS")
+    print("REQUESTBIN ENTERPRISE COMPREHENSIVE MODULE TESTS")
     print("█" * 60)
     
     import_success = test_module_imports()
@@ -323,7 +381,7 @@ def main():
     
     if import_success and functionality_success:
         print("✅ ALL TESTS PASSED!")
-        print("\nYour RequestBin installation is ready to use!")
+        print("\nYour RequestBin Enterprise installation is ready to use!")
         print("\nNext steps:")
         print("  1. Run: python web.py")
         print("  2. Visit: http://localhost:4000")

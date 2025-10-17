@@ -5,6 +5,7 @@ from io import BytesIO
 from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
+from flask_socketio import SocketIO
 
 
 class WSGIRawBody(object):
@@ -37,6 +38,39 @@ class WSGIRawBody(object):
 
 app = Flask(__name__)
 
+# Initialize SocketIO for real-time updates
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Import flask_socketio utilities for room management
+from flask_socketio import emit, join_room, leave_room
+
+# SocketIO event handlers
+@socketio.on('join')
+def on_join(data):
+    """Handle client joining a bin-specific room"""
+    bin_name = data.get('bin_name')
+    if bin_name:
+        join_room(bin_name)
+        print(f"Client joined room: {bin_name}")
+
+@socketio.on('leave')
+def on_leave(data):
+    """Handle client leaving a bin-specific room"""
+    bin_name = data.get('bin_name')
+    if bin_name:
+        leave_room(bin_name)
+        print(f"Client left room: {bin_name}")
+
+@socketio.on('connect')
+def on_connect():
+    """Handle client connection"""
+    print("Client connected")
+
+@socketio.on('disconnect')
+def on_disconnect():
+    """Handle client disconnection"""
+    print("Client disconnected")
+
 if os.environ.get('ENABLE_CORS', config.ENABLE_CORS):
     cors = CORS(app, resources={r"*": {"origins": os.environ.get('CORS_ORIGINS', config.CORS_ORIGINS)}})
 
@@ -55,10 +89,10 @@ login_manager.login_message = 'Please log in to access this page.'
 
 # Initialize authentication storage
 if config.STORAGE_BACKEND == "requestbin.storage.postgresql.PostgreSQLStorage":
-    from requestbin.auth_storage import PostgreSQLAuthStorage
+    from requestbin.auth.storage import PostgreSQLAuthStorage
     auth_db = PostgreSQLAuthStorage()
 else:
-    from requestbin.auth_storage import MemoryAuthStorage
+    from requestbin.auth.storage import MemoryAuthStorage
     auth_db = MemoryAuthStorage()
 
 # Initialize default admin user
@@ -110,6 +144,11 @@ app.add_url_rule('/admin/reject/<email>', 'auth.reject_user', methods=['POST'])
 app.add_url_rule('/verify-email', 'auth.verify_email', methods=['GET', 'POST'])
 app.add_url_rule('/resend-otp', 'auth.resend_otp', methods=['GET', 'POST'])
 
+# Password management routes
+app.add_url_rule('/auth/change-password', 'auth.change_password', methods=['GET', 'POST'])
+app.add_url_rule('/auth/forgot-password', 'auth.forgot_password', methods=['GET', 'POST'])
+app.add_url_rule('/auth/reset-password', 'auth.reset_password', methods=['GET', 'POST'])
+
 # API routes
 app.add_url_rule('/api/v1/bins', 'api.bins', methods=['POST'])
 app.add_url_rule('/api/v1/bins/<name>', 'api.bin', methods=['GET'])
@@ -120,4 +159,9 @@ app.add_url_rule('/api/v1/stats', 'api.stats')
 
 # app.add_url_rule('/robots.txt', redirect_to=url_for('static', filename='robots.txt'))
 
-from requestbin import api, views, auth_views
+# Import modules after app initialization
+from requestbin.views import api, main, auth as auth_views
+from requestbin.database import db
+
+# Make db and socketio available at package level for backwards compatibility
+__all__ = ['app', 'config', 'auth_db', 'db', 'socketio']

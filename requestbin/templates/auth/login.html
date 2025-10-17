@@ -29,6 +29,9 @@
                         {% if form.password.errors %}
                             <span class="help-inline">{{ form.password.errors[0] }}</span>
                         {% endif %}
+                        <span class="help-block">
+                            <a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a>
+                        </span>
                     </div>
                 </div>
                 

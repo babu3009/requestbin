@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 """
 Test the full bin creation workflow as it happens via the web interface
+Tests bin creation, request handling, and WebSocket integration
 """
 
 import os
 os.environ['REALM'] = 'local'
+os.environ['STORAGE_BACKEND'] = 'requestbin.storage.memory.MemoryStorage'
 
-from requestbin import app, db, auth_db, config
+from requestbin import app, db, auth_db, config, socketio
 import json
 
 def test_full_workflow():
@@ -83,12 +85,92 @@ def test_full_workflow():
     print("✅ WORKFLOW TEST PASSED!")
     print("=" * 70)
 
-if __name__ == '__main__':
-    success = test_full_workflow()
+
+def test_websocket_integration():
+    """Test WebSocket integration with bin updates"""
+    print("\n" + "=" * 70)
+    print("TESTING WEBSOCKET INTEGRATION")
+    print("=" * 70)
     
-    if not success:
-        print("\n💡 The 'Bin Not found' error is reproduced!")
-        print("   This suggests an issue with the request flow or sessions.")
+    tests_passed = 0
+    tests_failed = 0
+    
+    # Test 1: SocketIO is initialized
+    print("\n1. Checking SocketIO initialization...")
+    try:
+        assert socketio is not None
+        print("   ✅ SocketIO initialized")
+        tests_passed += 1
+    except AssertionError:
+        print("   ❌ SocketIO not initialized")
+        tests_failed += 1
+    
+    # Test 2: Check WebSocket handlers
+    print("\n2. Checking WebSocket event handlers...")
+    try:
+        assert 'connect' in socketio.handlers['/']
+        assert 'disconnect' in socketio.handlers['/']
+        assert 'join' in socketio.handlers['/']
+        assert 'leave' in socketio.handlers['/']
+        print("   ✅ All event handlers registered")
+        tests_passed += 1
+    except (AssertionError, KeyError) as e:
+        print(f"   ❌ Event handlers missing: {e}")
+        tests_failed += 1
+    
+    # Test 3: Test client connection
+    print("\n3. Testing WebSocket client connection...")
+    try:
+        client = socketio.test_client(app, namespace='/')
+        assert client.is_connected()
+        print("   ✅ WebSocket client connected")
+        tests_passed += 1
+        
+        # Test join event
+        print("\n4. Testing room join...")
+        client.emit('join', {'bin_name': 'test-bin'})
+        print("   ✅ Join event emitted")
+        tests_passed += 1
+        
+        client.disconnect()
+        print("   ✅ Client disconnected")
+        tests_passed += 1
+        
+    except Exception as e:
+        print(f"   ❌ WebSocket test failed: {e}")
+        tests_failed += 1
+    
+    print("\n" + "=" * 70)
+    if tests_failed == 0:
+        print("✅ WEBSOCKET INTEGRATION TEST PASSED!")
+    else:
+        print(f"⚠️  {tests_failed} WebSocket tests failed")
+    print("=" * 70)
+    
+    return tests_failed == 0
+
+
+if __name__ == '__main__':
+    workflow_success = test_full_workflow()
+    websocket_success = test_websocket_integration()
+    
+    print("\n" + "█" * 70)
+    print("FINAL TEST RESULTS")
+    print("█" * 70)
+    
+    if workflow_success and websocket_success:
+        print("✅ ALL TESTS PASSED!")
+        print("\nFeatures Verified:")
+        print("  ✓ Authentication flow")
+        print("  ✓ Bin creation via API")
+        print("  ✓ Bin access and display")
+        print("  ✓ WebSocket initialization")
+        print("  ✓ Real-time event handling")
+    else:
+        if not workflow_success:
+            print("❌ Workflow tests failed")
+        if not websocket_success:
+            print("❌ WebSocket tests failed")
     
     import sys
-    sys.exit(0 if success else 1)
+    sys.exit(0 if (workflow_success and websocket_success) else 1)

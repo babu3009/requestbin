@@ -55,6 +55,7 @@
                 {% if user.is_approved %}
                     <a href="/" class="btn btn-primary"><i class="icon-plus"></i> Create New Bin</a>
                 {% endif %}
+                <a href="{{ url_for('auth.change_password') }}" class="btn btn-info"><i class="icon-key"></i> Change Password</a>
                 <a href="/logout" class="btn btn-default"><i class="icon-signout"></i> Logout</a>
             </p>
         </div>

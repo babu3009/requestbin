@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{% block title %}RequestBin &mdash; Collect, inspect and debug HTTP requests and webhooks{% endblock %}</title>
+    <title>{% block title %}RequestBin Enterprise &mdash; Collect, inspect and debug HTTP requests and webhooks{% endblock %}</title>
     {% block icon %}<link href="/static/img/logo.png" rel="shortcut icon" />{% endblock %}
     <link href="/static/css/bootstrap.css" rel="stylesheet" media="screen">
     <link href="/static/css/responsive.css" rel="stylesheet" media="screen">
@@ -21,7 +21,7 @@
             <div class="span12">
               <h1 class="logo">
                 <a href="/"><img src="/static/img/logo-2x.png" height="38" width="44" /></a>
-                <a href="/"><span class="logo-accent">Request</span>Bin</a>
+                <a href="/"><span class="logo-accent">Request</span>Bin Enterprise</a>
               </h1>
                 <nav>
                     <ul class="nav-menu">
@@ -32,7 +32,8 @@
                                 <i class="icon-user"></i> {{ current_user.email }} <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="/about"><i class="icon-info-circle"></i> About</a></li>
+                                <li><a href="/"><i class="icon-home"></i> Home</a></li>
+                                <li><a href="/about"><i class="icon-info-sign"></i> About</a></li>
                                 <li><a href="/profile"><i class="icon-user"></i> Profile</a></li>
                                 {% if current_user.is_admin %}
                                 <li><a href="/admin/users"><i class="icon-shield"></i> Admin</a></li>
@@ -47,10 +48,11 @@
                                 <i class="icon-user"></i> Account <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="/about"><i class="icon-info-circle"></i> About</a></li>
+                                <li><a href="/"><i class="icon-home"></i> Home</a></li>
+                                <li><a href="/about"><i class="icon-info-sign"></i> About</a></li>
                                 <li class="divider"></li>
                                 <li><a href="/login"><i class="icon-signin"></i> Login</a></li>
-                                <li><a href="/register"><i class="icon-user-plus"></i> Register</a></li>
+                                <li><a href="/register"><i class="icon-edit"></i> Register</a></li>
                             </ul>
                         </li>
                         {% endif %}

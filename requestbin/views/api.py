@@ -3,7 +3,8 @@ import operator
 import base64
 from flask import session, make_response, request, render_template
 from flask_login import current_user, login_required
-from requestbin import app, db
+from requestbin import app
+from requestbin.database import db
 
 class BytesEncoder(json.JSONEncoder):
     def default(self, o):
